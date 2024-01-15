@@ -1,16 +1,18 @@
 package com.egobb.ws.service.impl.rest;
 
-import com.egobb.ws.domain.OrderStatusChangeWSDO;
-
+import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
-import java.util.List;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
-@Path("/order/tracking")
+@Path("/tracking")
 public class OrderTrackingRestService {
 
-    public Response processRequest(List<OrderStatusChangeWSDO> orderStatusChanges) {
-        return Response.status(Response.Status.CREATED).build();
-    }
+  @GET
+  @Produces(MediaType.TEXT_PLAIN)
+  public String helloWorld() {
+    return "Hello world ma brah";
+  }
 
 }
+
