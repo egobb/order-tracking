@@ -31,3 +31,5 @@ Thumbs.db
 # Others
 hs_err_pid*
 *.swp
+.mvn
+.sdkmanrc

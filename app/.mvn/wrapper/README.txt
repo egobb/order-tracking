@@ -1,1 +1,0 @@
-Download will occur automatically on first run of ./mvnw.
