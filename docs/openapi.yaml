@@ -1,0 +1,36 @@
+openapi: 3.0.3
+info:
+  title: Order Tracking API
+  version: 0.1.0
+paths:
+  /order/tracking:
+    post:
+      summary: Ingest order tracking events
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TrackingEvents' }
+          application/xml:
+            schema: { $ref: '#/components/schemas/TrackingEvents' }
+      responses:
+        '200':
+          description: Ingestion result
+components:
+  schemas:
+    Status:
+      type: string
+      enum: [PICKED_UP_AT_WAREHOUSE, OUT_FOR_DELIVERY, DELIVERY_ISSUE, DELIVERED]
+    TrackingEvent:
+      type: object
+      required: [orderId, status, eventTs]
+      properties:
+        orderId: { type: string }
+        status: { $ref: '#/components/schemas/Status' }
+        eventTs: { type: string, format: date-time }
+    TrackingEvents:
+      type: object
+      properties:
+        event:
+          type: array
+          items: { $ref: '#/components/schemas/TrackingEvent' }
