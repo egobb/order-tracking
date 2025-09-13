@@ -34,3 +34,5 @@ hs_err_pid*
 .mvn
 .sdkmanrc
 mvnw
+.tool_versions
+.tool-versions
