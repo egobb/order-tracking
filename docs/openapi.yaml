@@ -20,7 +20,7 @@ components:
   schemas:
     Status:
       type: string
-      enum: [RECOGIDO_EN_ALMACEN, EN_REPARTO, INCIDENCIA_EN_ENTREGA, ENTREGADO]
+      enum: [PICKED_UP_AT_WAREHOUSE, OUT_FOR_DELIVERY, DELIVERY_ISSUE, DELIVERED]
     TrackingEvent:
       type: object
       required: [orderId, status, eventTs]

@@ -23,7 +23,7 @@ public class RestIntegrationTest {
 	@Test
 	void post_ingest_json_200() {
 		given().port(this.port).contentType("application/json").body(
-				"{\"event\":[{\"orderId\":\"A1\",\"status\":\"RECOGIDO_EN_ALMACEN\",\"eventTs\":\"2025-01-01T10:00:00Z\"}]}")
+				"{\"event\":[{\"orderId\":\"A1\",\"status\":\"PICKED_UP_AT_WAREHOUSE\",\"eventTs\":\"2025-01-01T10:00:00Z\"}]}")
 				.when().post("/order/tracking").then().statusCode(200).body("[0].accepted", equalTo(true));
 	}
 }

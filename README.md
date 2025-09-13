@@ -8,10 +8,10 @@ This project is designed as a **portfolio piece** to demonstrate clean architect
 ## ✨ Features
 - REST API with **JSON** and **XML** support (`/order/tracking`).
 - Validates state transitions with a simple, auditable **state machine**:
-    - `RECOGIDO_EN_ALMACEN` (Picked up at warehouse) → initial.
-    - `EN_REPARTO` (Out for delivery).
-    - `INCIDENCIA_EN_ENTREGA` (Delivery issue).
-    - `ENTREGADO` (Delivered) → final.
+    - `PICKED_UP_AT_WAREHOUSE` (Picked up at warehouse) → initial.
+    - `OUT_FOR_DELIVERY` (Out for delivery).
+    - `DELIVERY_ISSUE` (Delivery issue).
+    - `DELIVERED` (Delivered) → final.
 - Audit log of all received events per order.
 - Append-only persistence with projection table (`orders`).
 - Observable with **Actuator**, **Prometheus metrics**, and structured logs.
@@ -51,8 +51,8 @@ JSON:
 ```json
 {
   "event": [
-    {"orderId": "123", "status": "RECOGIDO_EN_ALMACEN", "eventTs": "2025-01-01T10:00:00Z"},
-    {"orderId": "123", "status": "EN_REPARTO", "eventTs": "2025-01-01T14:00:00Z"}
+    {"orderId": "123", "status": "PICKED_UP_AT_WAREHOUSE", "eventTs": "2025-01-01T10:00:00Z"},
+    {"orderId": "123", "status": "OUT_FOR_DELIVERY", "eventTs": "2025-01-01T14:00:00Z"}
   ]
 }
 ```
@@ -62,12 +62,12 @@ XML:
 <events>
   <event>
     <orderId>123</orderId>
-    <status>RECOGIDO_EN_ALMACEN</status>
+    <status>PICKED_UP_AT_WAREHOUSE</status>
     <eventTs>2025-01-01T10:00:00Z</eventTs>
   </event>
   <event>
     <orderId>123</orderId>
-    <status>EN_REPARTO</status>
+    <status>OUT_FOR_DELIVERY</status>
     <eventTs>2025-01-01T14:00:00Z</eventTs>
   </event>
 </events>
