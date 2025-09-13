@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.egobb</groupId>
   <artifactId>order-tracking</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>1.0.0</version>
   <name>order-tracking</name>
   <description>Order tracking portfolio service (Spring Boot 3 / Java 17)</description>
 
