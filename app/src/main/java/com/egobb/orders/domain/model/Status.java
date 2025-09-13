@@ -1,12 +1,12 @@
 package com.egobb.orders.domain.model;
 
 public enum Status {
-	RECOGIDO_EN_ALMACEN, EN_REPARTO, INCIDENCIA_EN_ENTREGA, ENTREGADO;
+	PICKED_UP_AT_WAREHOUSE, OUT_FOR_DELIVERY, DELIVERY_ISSUE, DELIVERED;
 
 	public boolean isInitial() {
-		return this == RECOGIDO_EN_ALMACEN;
+		return this == PICKED_UP_AT_WAREHOUSE;
 	}
 	public boolean isFinal() {
-		return this == ENTREGADO;
+		return this == DELIVERED;
 	}
 }
