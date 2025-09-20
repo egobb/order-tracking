@@ -1,0 +1,9 @@
+.git
+**/target/
+**/.idea/
+**/.vscode/
+**/.DS_Store
+**/node_modules/
+.m2/
+.env
+deploy/docker-compose.yml
