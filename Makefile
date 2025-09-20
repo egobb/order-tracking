@@ -1,7 +1,44 @@
-.PHONY: up down
+# Makefile for order-tracking project
 
-up:
-	docker compose -f deploy/docker-compose.yml up -d
+COMPOSE = docker compose -f deploy/docker-compose.yml --env-file .env
+MVN = ./app/mvnw -f app/pom.xml
 
-down:
-	docker compose -f deploy/docker-compose.yml down -v
+.PHONY: up down ps logs-db logs-adminer run run-pg test fmt lint seed
+
+## --- Docker Compose commands ---
+
+up: ## Start Postgres + Adminer defined in /deploy/docker-compose.yml
+	$(COMPOSE) up -d
+
+down: ## Stop and remove containers + volumes
+	$(COMPOSE) down -v
+
+ps: ## List running containers
+	$(COMPOSE) ps
+
+logs-db: ## Show logs of Postgres container
+	$(COMPOSE) logs -f $(SERVICE_NAME)
+
+logs-adminer: ## Show logs of Adminer container
+	$(COMPOSE) logs -f adminer
+
+
+## --- Application commands ---
+
+run: ## Start the app with in-memory (H2) profile for quick development
+	$(MVN) -q -Dspring-boot.run.profiles=dev spring-boot:run
+
+run-pg: ## Start the app against Postgres (requires 'make up' and .env configured)
+	$(MVN) -q -Dspring-boot.run.profiles=pg spring-boot:run
+
+test: ## Run all tests
+	$(MVN) -q -B verify
+
+fmt: ## Format code with Maven plugin
+	$(MVN) -q spotless:apply
+
+lint: ## Compile and run checks without executing tests
+	$(MVN) -q -DskipTests=true -B -e -U verify
+
+seed: ## Run seed script (if available)
+	@./scripts/seed.sh
