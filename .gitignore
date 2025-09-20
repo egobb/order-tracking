@@ -32,7 +32,5 @@ Thumbs.db
 hs_err_pid*
 *.swp
 .mvn
-.sdkmanrc
-mvnw
 .tool_versions
 .tool-versions
