@@ -9,12 +9,14 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class BeansConfig {
-	@Bean
-	StateMachine stateMachine() {
-		return new StateMachine();
-	}
-	@Bean
-	IngestTrackingEventsUseCase useCase(OrderTimelineRepository repo, EventAppender appender, StateMachine sm) {
-		return new IngestTrackingEventsUseCase(repo, appender, sm);
-	}
+  @Bean
+  StateMachine stateMachine() {
+    return new StateMachine();
+  }
+
+  @Bean
+  IngestTrackingEventsUseCase useCase(
+      OrderTimelineRepository repo, EventAppender appender, StateMachine sm) {
+    return new IngestTrackingEventsUseCase(repo, appender, sm);
+  }
 }

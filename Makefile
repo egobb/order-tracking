@@ -35,7 +35,7 @@ test: ## Run all tests
 	$(MVN) -q -B verify
 
 fmt: ## Format code with Maven plugin
-	$(MVN) -q fmt:format
+	$(MVN) -q spotless:apply
 
 lint: ## Compile and run checks without executing tests
 	$(MVN) -q -DskipTests=true -B -e -U verify

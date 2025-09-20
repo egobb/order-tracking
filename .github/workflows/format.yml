@@ -15,9 +15,9 @@ jobs:
           distribution: temurin
           java-version: '17'
           cache: maven
-      - name: Run formatter (fmt:format) and fail if diffs
+      - name: Run formatter (spotless:apply) and fail if diffs
         run: |
-          ./app/mvnw -f app/pom.xml -q fmt:format
+          ./app/mvnw -f app/pom.xml -q spotless:apply
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           if [ -n "$(git status --porcelain)" ]; then
             echo "::error::El formato no está aplicado. Ejecuta 'make fmt' y sube los cambios."
