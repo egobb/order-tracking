@@ -190,15 +190,22 @@ When using Docker Compose, Postgres and Adminer ports are exposed for local deve
 
 ---
 
+
 ## 🗺️ Roadmap / Ideas
 
-- Add tracing (OpenTelemetry) and span attributes for domain events.
-- Add idempotency keys for event ingestion.
-- Add paging and filtering on read endpoints.
-- Export Grafana dashboards for demo.
-- Kubernetes manifests and Helm chart for a cloud demo.
-
----
+- **Event-driven scaling**: publish and consume tracking events via a **private Kafka topic** to decouple ingestion from persistence and enable horizontal scaling.
+- **CI/CD**: automated deployments to **AWS** (or any cloud) using **Terraform or Pulumi**; add preview environments per PR.
+- **API Gateway + policies**: front the service with an API Gateway (rate limits, auth offloading, request/response normalization).
+- **Security foundations**: JWT/OAuth2, basic hardening, and **security tests** (authz/authn, input validation, fuzzing).
+- **Observability**: ship **Grafana** in Docker with prebuilt dashboards (Actuator/Prometheus metrics, logs, JVM).
+- **Architecture (CQRS)**: introduce **CQRS** in `order-tracking` to split write commands and read projections.
+- **Distributed cache**: **Redis** for read-side caching of current order status and projections.
+- **Load testing**: **JMeter or Gatling** with baseline vs. optimized runs; publish reports in CI.
+- **ML module**: simple delay prediction for orders (baseline model + feature pipeline), exposed as an internal endpoint or async enrichment.
+- **Tracing**: OpenTelemetry traces and span attributes for domain events.
+- **Idempotency**: idempotency keys for event ingestion and deduplication.
+- **Read API enhancements**: paging and filtering on read endpoints.
+- **Kubernetes**: Helm chart and manifests for a cloud demo.
 
 ## 📄 License
 
