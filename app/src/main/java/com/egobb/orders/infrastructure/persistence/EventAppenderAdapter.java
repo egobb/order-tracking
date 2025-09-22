@@ -1,6 +1,6 @@
 package com.egobb.orders.infrastructure.persistence;
 
-import com.egobb.orders.domain.model.TrackingEvent;
+import com.egobb.orders.domain.event.TrackingEvent;
 import com.egobb.orders.domain.ports.EventAppender;
 import com.egobb.orders.infrastructure.persistence.jpa.TrackingEventEntity;
 import com.egobb.orders.infrastructure.persistence.jpa.TrackingEventJpaRepository;

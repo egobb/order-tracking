@@ -1,7 +1,7 @@
 package com.egobb.orders.application.usecase;
 
+import com.egobb.orders.domain.event.TrackingEvent;
 import com.egobb.orders.domain.model.OrderTimeline;
-import com.egobb.orders.domain.model.TrackingEvent;
 import com.egobb.orders.domain.ports.EventAppender;
 import com.egobb.orders.domain.ports.OrderTimelineRepository;
 import com.egobb.orders.domain.service.StateMachine;
