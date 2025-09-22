@@ -13,4 +13,18 @@ public enum Status {
   public boolean isFinal() {
     return this == DELIVERED;
   }
+
+  @Override
+  public String toString() {
+    return this.name();
+  }
+
+  public static Status fromString(String value) {
+    for (final Status status : Status.values()) {
+      if (status.name().equalsIgnoreCase(value)) {
+        return status;
+      }
+    }
+    throw new IllegalArgumentException("Unknown Status: " + value);
+  }
 }

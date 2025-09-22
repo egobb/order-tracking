@@ -23,6 +23,37 @@ services:
       - JAVA_OPTS=-Dspring.profiles.active=pg \
         -Dspring.datasource.url=jdbc:postgresql://db:5432/${POSTGRES_DB}
     depends_on:
-      - db
+      - postgres
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.1.7
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp=1
+      - --memory=1G
+      - --reserve-memory=0M
+      - --node-id=0
+      - --check=false
+      # Expose two listeners: one for containers, one for host
+      - --kafka-addr=PLAINTEXT://0.0.0.0:9092,OUTSIDE://0.0.0.0:19092
+      - --advertise-kafka-addr=PLAINTEXT://redpanda:9092,OUTSIDE://localhost:19092
+    ports:
+      - "9092:9092"     # inside Docker network
+      - "19092:19092"   # from host
+    healthcheck:
+      test: ["CMD", "bash", "-lc", "rpk cluster info -X brokers=localhost:19092 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  console:
+    image: docker.redpanda.com/redpandadata/console:v2.7.2
+    environment:
+      - KAFKA_BROKERS=redpanda:9092
+    ports:
+      - "8085:8080"
+    depends_on:
+      redpanda:
+        condition: service_healthy
 volumes:
   pgdata:

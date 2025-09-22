@@ -7,7 +7,7 @@ MVN = ./app/mvnw -f app/pom.xml
 
 ## --- Docker Compose commands ---
 
-up: ## Start Postgres + Adminer defined in /deploy/docker-compose.yml
+up: ## Start Postgres + Adminer + Kafka defined in /deploy/docker-compose.yml
 	$(COMPOSE) up -d
 
 down: ## Stop and remove containers + volumes
