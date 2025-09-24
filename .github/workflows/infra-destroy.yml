@@ -1,0 +1,90 @@
+name: Infrastructure - Destroy (Local Server)
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: "Environment folder under infra/envs (default: local)"
+        type: choice
+        required: true
+        default: local
+        options:
+          - local
+      confirm:
+        description: "Type EXACTLY: destroy-local"
+        required: true
+        default: ""
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+
+    env:
+      TF_IN_AUTOMATION: true
+      DOCKER_HOST: ssh://${{ secrets.LOCAL_USER }}@${{ secrets.LOCAL_HOST }}
+
+    steps:
+      - name: Safety Gate - Require exact confirmation
+        run: |
+          if [ "${{ inputs.confirm }}" != "destroy-${{ inputs.env }}" ]; then
+            echo "Refusing to run because confirm != destroy-${{ inputs.env }}"
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH for Docker over SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.LOCAL_HOST }} >> ~/.ssh/known_hosts || true
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+
+      - name: Terraform Init
+        working-directory: infra/envs/${{ inputs.env }}
+        run: terraform init
+
+      - name: Terraform Validate
+        working-directory: infra/envs/${{ inputs.env }}
+        run: terraform validate
+
+      - name: Terraform Plan (destroy)
+        id: plan
+        working-directory: infra/envs/${{ inputs.env }}
+        env:
+          TF_VAR_domain: ${{ secrets.DOMAIN }}
+          TF_VAR_letsencrypt_email: ${{ secrets.LE_EMAIL }}
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+        run: terraform plan -destroy -out=tfplan.destroy
+
+      - name: Summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.summary.addHeading('Terraform DESTROY plan ready', 2)
+            core.summary.addRaw(`Environment: **${{ inputs.env }}**`)
+            core.summary.addBreak()
+            core.summary.addRaw('This will remove Docker containers, networks, and volumes managed by Terraform.')
+            core.summary.addRaw('<br/><strong>PostgreSQL and Redpanda volumes created by Terraform will be DELETED.</strong>')
+            core.summary.write()
+
+      - name: Safety Check (TF_DESTROY must be true)
+        if: vars.TF_DESTROY != 'true'
+        run: |
+          echo "⚠️ TF_DESTROY != true. Skipping destroy for safety."
+          exit 0
+
+      - name: Terraform Apply Destroy
+        if: vars.TF_DESTROY == 'true'
+        working-directory: infra/envs/${{ inputs.env }}
+        env:
+          TF_VAR_domain: ${{ secrets.DOMAIN }}
+          TF_VAR_letsencrypt_email: ${{ secrets.LE_EMAIL }}
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+        run: terraform apply -auto-approve tfplan.destroy

@@ -1,0 +1,75 @@
+name: Infrastructure - Local Server
+
+on:
+  pull_request:
+    paths:
+      - "infra/**"
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  terraform-local:
+    runs-on: ubuntu-latest
+
+    env:
+      TF_IN_AUTOMATION: true
+      # Docker remote over SSH (user and host configured as secrets)
+      DOCKER_HOST: ssh://${{ secrets.LOCAL_USER }}@${{ secrets.LOCAL_HOST }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH for Docker over SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          # Optional: add server to known_hosts to avoid host key prompt
+          ssh-keyscan -H ${{ secrets.LOCAL_HOST }} >> ~/.ssh/known_hosts || true
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+
+      - name: Terraform Init
+        working-directory: infra/envs/local
+        run: terraform init
+
+      - name: Terraform Validate
+        working-directory: infra/envs/local
+        run: terraform validate
+
+      - name: Terraform Plan
+        id: plan
+        working-directory: infra/envs/local
+        env:
+          TF_VAR_domain: ${{ secrets.DOMAIN }}
+          TF_VAR_letsencrypt_email: ${{ secrets.LE_EMAIL }}
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+        run: terraform plan -out=tfplan
+
+      - name: Comment Plan on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.summary.addRaw("Terraform plan generated for **local** environment.")
+            core.summary.write()
+
+      - name: Safety Check
+        if: github.event_name == 'release' && vars.TF_APPLY != 'true'
+        run: |
+          echo "⚠️ TF_APPLY is not set to true. Skipping apply for safety."
+          exit 0
+
+      - name: Terraform Apply (on release + TF_APPLY=true)
+        if: github.event_name == 'release' && vars.TF_APPLY == 'true'
+        working-directory: infra/envs/local
+        env:
+          TF_VAR_domain: ${{ secrets.DOMAIN }}
+          TF_VAR_letsencrypt_email: ${{ secrets.LE_EMAIL }}
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+        run: terraform apply -auto-approve tfplan
