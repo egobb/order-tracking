@@ -39,8 +39,17 @@ resource "docker_container" "traefik" {
 
   networks_advanced { name = docker_network.proxy.name }
 
-  ports { internal = 80  external = 80  protocol = "tcp" }
-  ports { internal = 443 external = 443 protocol = "tcp" }
+  ports {
+    internal = 80
+    external = 80
+    protocol = "tcp"
+  }
+
+  ports {
+    internal = 443
+    external = 443
+    protocol = "tcp"
+  }
 
   volumes {
     container_path = "/var/run/docker.sock"
