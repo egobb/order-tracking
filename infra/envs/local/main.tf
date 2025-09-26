@@ -163,14 +163,34 @@ resource "docker_container" "app" {
     "TZ=Europe/Madrid"
   ]
 
-  labels = {
-    "traefik.enable" = "true"
+  labels {
+    label = "traefik.enable"
+    value = "true"
+  }
 
-    "traefik.http.routers.ordertracking.rule"                 = "Host(`${local.domain}`)"
-    "traefik.http.routers.ordertracking.entrypoints"          = "websecure"
-    "traefik.http.routers.ordertracking.tls"                  = "true"
-    "traefik.http.routers.ordertracking.tls.certresolver"     = "le"
-    "traefik.http.services.ordertracking.loadbalancer.server.port" = "8080"
+  labels {
+    label = "traefik.http.routers.ordertracking.rule"
+    value = "Host(`${local.domain}`)"
+  }
+
+  labels {
+    label = "traefik.http.routers.ordertracking.entrypoints"
+    value = "websecure"
+  }
+
+  labels {
+    label = "traefik.http.routers.ordertracking.tls"
+    value = "true"
+  }
+
+  labels {
+    label = "traefik.http.routers.ordertracking.tls.certresolver"
+    value = "le"
+  }
+
+  labels {
+    label = "traefik.http.services.ordertracking.loadbalancer.server.port"
+    value = "8080"
   }
 
   healthcheck {

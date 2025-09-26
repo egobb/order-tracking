@@ -32,3 +32,5 @@ hs_err_pid*
 *.swp
 .tool_versions
 .tool-versions
+.terraform
+*.lock.*
