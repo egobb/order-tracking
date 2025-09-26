@@ -1,0 +1,4 @@
+domain            = "tracking.example.com"
+letsencrypt_email = "your@email.com"
+app_image         = "ghcr.io/egobb/order-tracking:latest"
+db_password       = "replace-with-a-secure-secret"
