@@ -29,6 +29,35 @@ jobs:
           # Optional: add server to known_hosts to avoid host key prompt
           ssh-keyscan -H ${{ secrets.LOCAL_HOST }} >> ~/.ssh/known_hosts || true
 
+      - name: Preflight – check required secrets/vars
+        run: |
+          miss=0
+          for v in LOCAL_HOST LOCAL_USER DOMAIN LE_EMAIL DB_PASSWORD SSH_PRIVATE_KEY; do
+            if [ -z "${{ secrets[$v] || '' }}" ]; then
+              echo "::error::Missing required secret: $v"
+              miss=1
+            fi
+          done
+          if [ -z "${{ vars.TF_APPLY }}" ]; then
+            echo "::warning::Repository variable TF_APPLY is not set (default safety = false)."
+          fi
+          if [ $miss -eq 1 ]; then
+            exit 1
+          fi
+
+      - name: Smoke test – SSH connectivity
+        env:
+          HOST: ${{ secrets.LOCAL_HOST }}
+          USER: ${{ secrets.LOCAL_USER }}
+        run: |
+          ssh -o StrictHostKeyChecking=no $USER@$HOST 'echo "SSH OK on $(hostname)"'
+
+      - name: Smoke test – Docker remote via DOCKER_HOST
+        env:
+          DOCKER_HOST: ssh://${{ secrets.LOCAL_USER }}@${{ secrets.LOCAL_HOST }}
+        run: |
+          docker version || (echo "::error::Cannot talk to remote Docker daemon"; exit 1)
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
