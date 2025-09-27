@@ -1,4 +1,8 @@
 terraform {
+  backend "gcs" {
+    bucket = "order-tracking-473419-tfstate"
+    prefix = "infra/envs/gcp-cloud-run"
+  }
   required_version = ">= 1.6.0"
   required_providers {
     google = {
@@ -35,7 +39,7 @@ resource "google_artifact_registry_repository" "repo" {
   repository_id = var.repo_id
   description   = "Order Tracking container images"
   format        = "DOCKER"
-  depends_on    = [for a in google_project_service.apis : a]
+  depends_on = [google_project_service.apis]
 }
 
 # Service Account that Cloud Run will use
@@ -124,9 +128,9 @@ resource "google_cloud_run_v2_service" "svc" {
   }
 
   depends_on = [
-    for a in google_project_service.apis : a,
-  google_artifact_registry_repository.repo
-]
+    google_project_service.apis,
+    google_artifact_registry_repository.repo, # (opcional pero recomendable)
+  ]
 }
 
 # IAM binding → make service public if I want, or restrict to the SA

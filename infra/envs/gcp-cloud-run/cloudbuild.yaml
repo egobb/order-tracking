@@ -1,10 +1,26 @@
-# Cloud Build config for building and pushing my container to Artifact Registry
-# I'm keeping it very simple for now: build + push only
-# Later I can add steps for tests, Terraform, or even deploy
+# Cloud Build: I want CI to build & push the image, then apply Terraform so Cloud Run points to the new image.
+# I run Terraform twice the very first time only if needed; for regular runs, the second apply is the one that matters.
 
 steps:
-  # Step 1: Build the Docker image
+  # --- Ensure infra exists (APIs, Artifact Registry, etc.) ---
+  # I keep this first apply to create infra if someone triggers the build in a fresh project.
+  - name: "hashicorp/terraform:1.6.6"
+    entrypoint: "bash"
+    dir: "infra/envs/gcp-cloud-run"
+    args:
+      - -c
+      - |
+        terraform init -input=false
+        terraform apply -input=false -auto-approve \
+          -var "project_id=$PROJECT_ID" \
+          -var "region=${_REGION}" \
+          -var "repo_id=${_REPO}" \
+          -var "service_name=${_SERVICE_NAME}" \
+          -var "image=ghcr.io/egobb/order-tracking:latest"
+
+  # --- Build my app image from repo root ---
   - name: "gcr.io/cloud-builders/docker"
+    dir: "deploy/."
     args:
       [
         "build",
@@ -13,7 +29,7 @@ steps:
         "."
       ]
 
-  # Step 2: Push the Docker image to Artifact Registry
+  # --- Push my image to Artifact Registry ---
   - name: "gcr.io/cloud-builders/docker"
     args:
       [
@@ -21,11 +37,27 @@ steps:
         "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_IMAGE}"
       ]
 
-images:
-  - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_IMAGE}"
+  # --- Point Cloud Run to the new image via Terraform ---
+  - name: "hashicorp/terraform:1.6.6"
+    entrypoint: "bash"
+    dir: "infra/envs/gcp-cloud-run"
+    args:
+      - -c
+      - |
+        terraform apply -input=false -auto-approve \
+          -var "project_id=$PROJECT_ID" \
+          -var "region=${_REGION}" \
+          -var "repo_id=${_REPO}" \
+          -var "service_name=${_SERVICE_NAME}" \
+          -var "image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_IMAGE}"
+
+options:
+  machineType: "E2_MEDIUM"
+  logging: CLOUD_LOGGING_ONLY
+timeout: "1200s"
 
 substitutions:
-  # Default values – I can override them in the trigger UI
   _REGION: "europe-west1"
   _REPO: "order-tracking"
   _IMAGE: "order-tracking:latest"
+  _SERVICE_NAME: "order-tracking"
