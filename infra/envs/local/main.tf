@@ -9,7 +9,9 @@ terraform {
 }
 
 # Provider uses DOCKER_HOST=ssh://user@host (set in GitHub Actions)
-provider "docker" {}
+provider "docker" {
+  host = "ssh://rpi-docker"
+}
 
 locals {
   app_image     = var.app_image
@@ -28,7 +30,7 @@ resource "docker_network" "backend" { name = "backend" }
 
 # Volumes
 resource "docker_volume" "pgdata"           { name = "pgdata" }
-resource "docker_volume" "redpanda_data"    { name = "redpanda_data" }
+resource "docker_volume" "kafka_data"    { name = "kafka_data" }
 resource "docker_volume" "traefik_acme"     { name = "traefik_acme" }
 
 # Traefik (reverse proxy + TLS)
@@ -108,36 +110,41 @@ resource "docker_container" "db" {
   }
 }
 
-# Redpanda (single-node Kafka, internal only)
 resource "docker_container" "kafka" {
-  name    = "redpanda"
-  image   = local.kafka_image
+  name    = "kafka"
+  image   = "bitnami/kafka:3.7"   # multi-arch (arm64 OK)
   restart = "unless-stopped"
 
   networks_advanced { name = docker_network.backend.name }
 
-  command = [
-    "redpanda", "start",
-    "--mode", "dev-container",
-    "--overprovisioned",
-    "--smp", "1",
-    "--memory", "1024M",
-    "--kafka-addr", "internal://0.0.0.0:9092",
-    "--advertise-kafka-addr", "internal://kafka:9092"
+  # KRaft single-node (sin ZooKeeper)
+  env = [
+    "TZ=Europe/Madrid",
+    "BITNAMI_DEBUG=false",
+    "KAFKA_ENABLE_KRAFT=yes",
+    "KAFKA_CFG_NODE_ID=1",
+    "KAFKA_CFG_PROCESS_ROLES=broker,controller",
+    "KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093",
+    "KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092",
+    "KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT",
+    "KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER",
+    "KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093",
+    "ALLOW_PLAINTEXT_LISTENER=yes"
   ]
 
   volumes {
-    volume_name    = docker_volume.redpanda_data.name
-    container_path = "/var/lib/redpanda/data"
+    volume_name    = docker_volume.kafka_data.name
+    container_path = "/bitnami/kafka"
   }
 
   healthcheck {
-    test     = ["CMD-SHELL", "rpk cluster info || exit 1"]
-    interval = "15s"
+    test     = ["CMD-SHELL", "/opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1 || exit 1"]
+    interval = "20s"
     timeout  = "5s"
     retries  = 20
   }
 }
+
 
 # Order Tracking App
 resource "docker_container" "app" {
