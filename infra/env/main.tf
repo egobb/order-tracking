@@ -2,7 +2,8 @@ terraform {
   required_version = ">= 1.7.0"
   backend "s3" {
     bucket         = "egobb-tf-state"  # from bootstrap
-    key            = "order-tracking/${terraform.workspace}/terraform.tfstate"
+    key            = "terraform.tfstate"
+    workspace_key_prefix = "order-tracking"
     region         = "eu-west-1"
     dynamodb_table = "egobb-tf-locks"
     encrypt        = true
@@ -12,7 +13,10 @@ terraform {
   }
 }
 
-provider "aws" { region = var.aws_region }
+variable "aws_region" {
+  type    = string
+  default = "eu-west-1"
+}
 
 locals {
   name           = "order-tracking-${terraform.workspace}"

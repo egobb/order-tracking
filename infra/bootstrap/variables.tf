@@ -1,6 +1,6 @@
 variable "aws_region" {
   type    = string
-  default = "eu-west-1"
+  default = "eu-east-1"
 }
 
 variable "tf_state_bucket" {
@@ -20,7 +20,7 @@ variable "monthly_budget_amount" {
 
 variable "budget_emails" {
   type    = list(string)
-  default = ["tu-email@ejemplo.com"]
+  default = ["egoberngarcia@gmail.com"]
 }
 
 
