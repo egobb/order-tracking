@@ -1,0 +1,73 @@
+name: Deploy PROD (ECS)
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-1
+  TF_WORKSPACE: prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS creds (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_PROD_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & Push image
+        env:
+          ECR_REPO: order-tracking
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          docker build -f deploy/Dockerfile -t $REGISTRY/$ECR_REPO:$IMAGE_TAG .
+          docker push $REGISTRY/$ECR_REPO:$IMAGE_TAG
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init + Workspace
+        working-directory: infra/env
+        run: |
+          terraform init
+          terraform workspace select $TF_WORKSPACE || terraform workspace new $TF_WORKSPACE
+
+      - name: Terraform Plan
+        working-directory: infra/env
+        run: |
+          terraform plan \
+            -var="image_tag=${{ github.event.release.tag_name }}" \
+            -var="spring_profile=default" \
+            -var="enable_https=true" \
+            -var="domain_name=enriquegoberna.com" \
+            -var="subdomain=order-tracking"
+
+      - name: Terraform Apply
+        working-directory: infra/env
+        run: |
+          terraform apply -auto-approve \
+            -var="image_tag=${{ github.event.release.tag_name }}" \
+            -var="spring_profile=default" \
+            -var="enable_https=true" \
+            -var="domain_name=enriquegoberna.com" \
+            -var="subdomain=order-tracking"
+
+      - name: Show URL
+        working-directory: infra/env
+        run: terraform output app_url
