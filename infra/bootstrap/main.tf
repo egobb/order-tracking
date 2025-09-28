@@ -148,7 +148,12 @@ data "aws_iam_policy_document" "dev_trust" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:egobb/order-tracking:ref:refs/heads/feature/infra-aws/*"]
+      values = [
+        "repo:egobb/order-tracking:environment:dev",         # <- si el job usa environment: dev
+        "repo:egobb/order-tracking:ref:refs/heads/feature/infra-aws",
+        "repo:egobb/order-tracking:ref:refs/heads/deploy/*", # <- si disparas desde deploy/*
+        "repo:egobb/order-tracking:ref:refs/heads/develop",  # opcional
+      ]
     }
 
     condition {
