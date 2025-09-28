@@ -60,7 +60,5 @@ resource "aws_lb" "this" {
 # Outputs
 ########################
 output "alb_dns" { value = aws_lb.this.dns_name }
-output "app_url" {
-  value = var.enable_https ? "https://${local.fqdn}" : "http://${aws_lb.this.dns_name}"
-}
+
 output "ecr_repo" { value = aws_ecr_repository.app.repository_url }

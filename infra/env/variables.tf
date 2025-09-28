@@ -48,3 +48,19 @@ variable "subdomain" {
   type    = string
   default = "order-tracking" # => order-tracking.enriquegoberna.com
 }
+
+variable "vpc_id" {
+  description = "VPC donde se despliega el ALB y ECS"
+  type        = string
+}
+
+variable "public_subnet_ids" {
+  description = "IDs de subnets públicas (al menos 2 AZs)"
+  type        = list(string)
+}
+
+variable "container_port" {
+  description = "Puerto en el que escucha el contenedor (usado en el ALB, target group y ECS task)"
+  type        = number
+  default     = 8080
+}
