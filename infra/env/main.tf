@@ -47,10 +47,11 @@ resource "aws_ecr_repository" "app" {
 # HTTP by default, optional HTTPS if enable_https=true
 ########################
 resource "aws_lb" "this" {
-  name               = "${local.name}-alb"
+  name               = "ot-alb"
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
-  subnets            = [for s in aws_subnet.public : s.id]
+  subnets            = var.public_subnet_ids
+  idle_timeout       = 60
 }
 
 # ... listener 80 always
