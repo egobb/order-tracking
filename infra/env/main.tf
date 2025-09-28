@@ -13,11 +13,6 @@ terraform {
   }
 }
 
-variable "aws_region" {
-  type    = string
-  default = "eu-west-1"
-}
-
 locals {
   name           = "order-tracking-${terraform.workspace}"
   container_name = "order-tracking"

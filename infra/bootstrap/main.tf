@@ -127,6 +127,32 @@ data "aws_iam_policy_document" "ci_permissions" {
     ]
     resources = ["*"]
   }
+
+  statement {
+    sid     = "TerraformStateBucket"
+    effect  = "Allow"
+    actions = [
+      "s3:ListBucket",
+      "s3:GetBucketLocation"
+    ]
+    resources = [
+      "arn:aws:s3:::${var.tf_state_bucket}"
+    ]
+  }
+
+  statement {
+    sid     = "TerraformStateObjects"
+    effect  = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject"
+    ]
+    resources = [
+      "arn:aws:s3:::${var.tf_state_bucket}/*"
+    ]
+  }
+
 }
 
 resource "aws_iam_policy" "ci_deployer" {
