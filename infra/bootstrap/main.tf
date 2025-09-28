@@ -137,6 +137,7 @@ resource "aws_iam_policy" "ci_deployer" {
 # DEV trust: only deploy/* branches
 data "aws_iam_policy_document" "dev_trust" {
   statement {
+    sid     = "AllowGitHubOIDC"
     effect  = "Allow"
     actions = ["sts:AssumeRoleWithWebIdentity"]
 
