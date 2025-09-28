@@ -47,7 +47,6 @@ jobs:
         working-directory: infra/env
         run: |
           terraform init
-          terraform workspace select $TF_WORKSPACE || terraform workspace new $TF_WORKSPACE
 
       - name: Terraform Plan
         working-directory: infra/env
