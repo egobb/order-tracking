@@ -1,3 +1,5 @@
+data "aws_caller_identity" "this" {}
+
 terraform {
   required_version = ">= 1.7.0"
   required_providers {
@@ -137,6 +139,20 @@ data "aws_iam_policy_document" "ci_permissions" {
     ]
     resources = [
       "arn:aws:s3:::${var.tf_state_bucket}"
+    ]
+  }
+
+  statement {
+    sid     = "TerraformLockTable"
+    effect  = "Allow"
+    actions = [
+      "dynamodb:DescribeTable",
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:DeleteItem"
+    ]
+    resources = [
+      "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.this.account_id}:table/${var.tf_lock_table}"
     ]
   }
 
