@@ -2,7 +2,8 @@ name: Deploy DEV (ECS)
 
 on:
   push:
-    branches: ['deploy/**']
+    branches: ['feature/infra-aws', 'develop']
+    pull_request: { branches: [develop] }
   workflow_dispatch:
 
 permissions:
