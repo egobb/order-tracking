@@ -83,3 +83,9 @@ variable "app_env_content" {
   type        = string
   default     = ""
 }
+
+variable "cb_connection_id" {
+  description = "Content of the optional secret (env data)"
+  type        = string
+  default     = ""
+}

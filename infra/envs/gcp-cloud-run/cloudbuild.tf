@@ -1,31 +1,33 @@
-# Cloud Build trigger that points to my GitHub repo and runs the pipeline in cloudbuild.yaml
-# Note: I must have the "Google Cloud Build" GitHub App installed and the repo authorized.
+# Repositorio conectado vía "Connections" (selecciona el connection_id y la URL del repo)
+resource "google_cloudbuildv2_repository" "repo" {
+  project       = var.project_id
+  location      = "global"
+  connection    = var.cb_connection_id     # nombre de tu "Connection" (p. ej. "github-conn")
+  remote_uri    = "https://github.com/egobb/order-tracking.git"
+}
 
-resource "google_cloudbuild_trigger" "order_tracking_build" {
-  name        = var.cb_trigger_name
-  description = "Build & push image for Order Tracking (Cloud Run env)"
-  filename    = "infra/envs/gcp-cloud-run/cloudbuild.yaml" # I keep the pipeline colocated with this env
+resource "google_cloudbuildv2_trigger" "order_tracking_build" {
+  project  = var.project_id
+  location = "global"
+  name     = var.cb_trigger_name
 
-  github {
-    owner = var.github_owner   # ex: "egobb"
-    name  = var.github_repo    # ex: "order-tracking"
-
+  repository_event_config {
+    repository = google_cloudbuildv2_repository.repo.id
     push {
-      # I keep it simple: trigger on pushes to main (I can switch to tags later)
-      branch = var.cb_branch_regex  # ex: "^main$"
+      branch = var.cb_branch_regex       # sigue siendo regex, ej: "^main$"
     }
   }
 
-  substitutions = {
-    # I set sane defaults here; I can override per-trigger in console if I want.
-    _REGION = var.cb_region
-    _REPO   = var.cb_repo
-    _IMAGE  = var.cb_image
+  build {
+    filename = "infra/envs/gcp-cloud-run/cloudbuild.yaml"
+    substitutions = {
+      _REGION = var.cb_region
+      _REPO   = var.cb_repo
+      _IMAGE  = var.cb_image
+    }
   }
 }
 
-# I need to grant Artifact Registry Writer to the Cloud Build default SA
-# so it can push the image to my AR repo.
 data "google_project" "current" {}
 
 resource "google_project_iam_member" "cb_artifact_writer" {
