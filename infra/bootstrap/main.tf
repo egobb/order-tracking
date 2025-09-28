@@ -206,6 +206,20 @@ resource "aws_iam_role" "prod_deployer" {
   ]
 }
 
+resource "aws_ecr_repository" "order_tracking" {
+  name                 = "order-tracking"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Project = "order-tracking"
+    Env     = "dev"
+  }
+}
+
 ########################
 # Optional: monthly budget
 ########################
