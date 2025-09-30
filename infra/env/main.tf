@@ -4,7 +4,7 @@ terraform {
     bucket         = "egobb-tf-state"  # from bootstrap
     key            = "terraform.tfstate"
     workspace_key_prefix = "order-tracking"
-    region         = "eu-west-1"
+    region         = "us-east-1"
     dynamodb_table = "egobb-tf-locks"
     encrypt        = true
   }
