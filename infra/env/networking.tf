@@ -1,7 +1,7 @@
 resource "aws_security_group" "alb" {
   name        = "ot-alb-sg"
   description = "ALB 80/443 in, all out"
-  vpc_id      = var.vpc_id
+  vpc_id      = local.vpc_id
 
   # HTTP
   ingress {
@@ -35,7 +35,7 @@ resource "aws_security_group" "alb" {
 
 resource "aws_security_group" "svc" {
   name   = "ot-svc-sg"
-  vpc_id = var.vpc_id
+  vpc_id = local.vpc_id
 
   # Solo el ALB puede entrar al contenedor
   ingress {

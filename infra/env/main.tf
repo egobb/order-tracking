@@ -42,17 +42,8 @@ resource "aws_ecr_repository" "app" {
 
 # ... (same ECS config as before, with comments "this role allows ECS tasks to pull images", etc.)
 
-########################
-# Application Load Balancer
-# HTTP by default, optional HTTPS if enable_https=true
-########################
-resource "aws_lb" "this" {
-  name               = "ot-alb"
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb.id]
-  subnets            = var.public_subnet_ids
-  idle_timeout       = 60
-}
+
+
 
 # ... listener 80 always
 # ... if enable_https=true: create ACM cert validated by Route53 + listener 443 + Route53 A record
