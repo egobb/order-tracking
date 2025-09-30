@@ -20,22 +20,7 @@ locals {
   fqdn           = var.subdomain == "" ? local.domain_name : "${var.subdomain}.${local.domain_name}"
 }
 
-########################
-# ECR for container images
-########################
-resource "aws_ecr_repository" "order_tracking" {
-  name                 = "order-tracking"
-  image_tag_mutability = "MUTABLE"
 
-  image_scanning_configuration {
-    scan_on_push = true
-  }
-
-  tags = {
-    Project = "order-tracking"
-    Env     = "dev"
-  }
-}
 
 ########################
 # ECS cluster, IAM roles, task definition, service
