@@ -39,5 +39,3 @@ locals {
 # Outputs
 ########################
 output "alb_dns" { value = aws_lb.this.dns_name }
-
-output "ecr_repo" { value = aws_ecr_repository.app.repository_url }
