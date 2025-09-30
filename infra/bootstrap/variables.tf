@@ -5,7 +5,7 @@ variable "aws_region" {
 
 variable "tf_state_bucket" {
   type    = string
-  default = "egobb-tf-state"
+  default = "egobb-tf-state-us-east-1"
 }
 
 variable "tf_lock_table" {
