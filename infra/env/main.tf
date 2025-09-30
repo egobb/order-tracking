@@ -21,18 +21,20 @@ locals {
 }
 
 ########################
-# VPC, subnets, NAT, routes
-# Note: using raw resources for clarity, could be replaced with official vpc module
-########################
-
-# ... VPC + subnets + NAT omitted here (same as previous version, comments inline)
-
-########################
 # ECR for container images
 ########################
-resource "aws_ecr_repository" "app" {
-  name = "order-tracking"
-  image_scanning_configuration { scan_on_push = true }
+resource "aws_ecr_repository" "order_tracking" {
+  name                 = "order-tracking"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Project = "order-tracking"
+    Env     = "dev"
+  }
 }
 
 ########################
