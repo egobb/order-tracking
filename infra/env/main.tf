@@ -1,7 +1,7 @@
 terraform {
   required_version = ">= 1.7.0"
   backend "s3" {
-    bucket         = "egobb-tf-state"  # from bootstrap
+    bucket         = "egobb-tf-state-us-east-1"  # from bootstrap
     key            = "terraform.tfstate"
     workspace_key_prefix = "order-tracking"
     region         = "us-east-1"
