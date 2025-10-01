@@ -242,6 +242,79 @@ resource "aws_iam_role_policy_attachment" "dev_deployer_exec_access_attach" {
   policy_arn = aws_iam_policy.dev_deployer_exec_access.arn
 }
 
+resource "aws_iam_policy" "dev_deployer_ec2_sg" {
+  name        = "order-tracking-dev-deployer-ec2-sg"
+  description = "Permisos de SG para env DEV, acotados a la VPC"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      # Crear SG en una VPC concreta
+      {
+        Sid:    "CreateSecurityGroupInVpc",
+        Effect: "Allow",
+        Action: ["ec2:CreateSecurityGroup"],
+        Resource: "arn:aws:ec2:us-east-1:${data.aws_caller_identity.this.account_id}:vpc/vpc-0bbd6782685efb443"
+      },
+      # Autorizar reglas (ingress/egress) sobre SGs que empiecen por ot-
+      {
+        Sid:    "ManageRulesOnProjectSgs",
+        Effect: "Allow",
+        Action: [
+          "ec2:AuthorizeSecurityGroupIngress",
+          "ec2:AuthorizeSecurityGroupEgress",
+          "ec2:RevokeSecurityGroupIngress",
+          "ec2:RevokeSecurityGroupEgress"
+        ],
+        Resource: "arn:aws:ec2:us-east-1:${data.aws_caller_identity.this.account_id}:security-group/*",
+        Condition: {
+          "StringLike": { "aws:ResourceTag/Project": "order-tracking" }
+        }
+      },
+      # Borrar SGs del proyecto (Terraform destroy/replace)
+      {
+        Sid:    "DeleteProjectSgs",
+        Effect: "Allow",
+        Action: ["ec2:DeleteSecurityGroup"],
+        Resource: "arn:aws:ec2:us-east-1:${data.aws_caller_identity.this.account_id}:security-group/*",
+        Condition: {
+          "StringLike": { "aws:ResourceTag/Project": "order-tracking" }
+        }
+      },
+      # Etiquetar al crear (Terraform)
+      {
+        Sid:    "CreateTagsOnSgCreate",
+        Effect: "Allow",
+        Action: ["ec2:CreateTags"],
+        Resource: "arn:aws:ec2:us-east-1:${data.aws_caller_identity.this.account_id}:security-group/*",
+        Condition: {
+          "ForAllValues:StringEquals": { "aws:TagKeys": ["Project","Env"] },
+          "StringEquals": { "aws:RequestTag/Project": "order-tracking" }
+        }
+      },
+      # Lecturas necesarias
+      {
+        Sid:    "ReadDescribeForEc2",
+        Effect: "Allow",
+        Action: [
+          "ec2:DescribeSecurityGroups",
+          "ec2:DescribeVpcs",
+          "ec2:DescribeSubnets",
+          "ec2:DescribeRouteTables"
+        ],
+        Resource: "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "dev_deployer_ec2_sg_attach" {
+  role       = aws_iam_role.dev_deployer.name
+  policy_arn = aws_iam_policy.dev_deployer_ec2_sg.arn
+}
+
+
+
 resource "aws_iam_role" "dev_deployer" {
   name               = "order-tracking-dev-deployer"
   assume_role_policy = data.aws_iam_policy_document.dev_trust.json
