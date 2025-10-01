@@ -32,7 +32,7 @@ resource "aws_ecs_task_definition" "this" {
   network_mode             = "awsvpc"
   cpu                      = var.task_cpu
   memory                   = var.task_memory
-  execution_role_arn       = aws_iam_role.task_execution.arn
+  execution_role_arn       = data.aws_iam_role.task_execution.arn
 
   container_definitions = jsonencode([
     {
