@@ -15,14 +15,8 @@ data "aws_iam_policy_document" "task_assume" {
   }
 }
 
-resource "aws_iam_role" "task_execution" {
-  name               = "ot-ecs-execution-role"
-  assume_role_policy = data.aws_iam_policy_document.task_assume.json
-}
-
-resource "aws_iam_role_policy_attachment" "task_execution_managed" {
-  role       = aws_iam_role.task_execution.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+data "aws_iam_role" "task_execution" {
+  name = "ot-ecs-execution-role"
 }
 
 # Log group para el contenedor
