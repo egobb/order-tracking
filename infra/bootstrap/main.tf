@@ -207,6 +207,41 @@ data "aws_iam_policy_document" "dev_trust" {
   }
 }
 
+# Política con GetRole + PassRole
+resource "aws_iam_policy" "dev_deployer_exec_access" {
+  name        = "order-tracking-dev-deployer-ecs-exec-access"
+  description = "Permite al deployer DEV leer y pasar el ECS execution role"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid      = "AllowReadExecutionRole",
+        Effect   = "Allow",
+        Action   = ["iam:GetRole"],
+        Resource = "arn:aws:iam::${data.aws_caller_identity.this.account_id}:role/ot-ecs-execution-role"
+      },
+      {
+        Sid      = "AllowPassExecutionRoleToEcs",
+        Effect   = "Allow",
+        Action   = ["iam:PassRole"],
+        Resource = "arn:aws:iam::${data.aws_caller_identity.this.account_id}:role/ot-ecs-execution-role",
+        Condition = {
+          StringEquals = {
+            "iam:PassedToService" = "ecs-tasks.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+}
+
+# Adjuntar la policy al rol
+resource "aws_iam_role_policy_attachment" "dev_deployer_exec_access_attach" {
+  role       = aws_iam_role.dev_deployer.name
+  policy_arn = aws_iam_policy.dev_deployer_exec_access.arn
+}
+
 resource "aws_iam_role" "dev_deployer" {
   name               = "order-tracking-dev-deployer"
   assume_role_policy = data.aws_iam_policy_document.dev_trust.json
