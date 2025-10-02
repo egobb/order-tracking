@@ -53,19 +53,13 @@ resource "aws_iam_policy" "dev_deployer_ec2_sg" {
           "ec2:RevokeSecurityGroupEgress"
         ],
         Resource: "arn:aws:ec2:us-east-1:${data.aws_caller_identity.this.account_id}:security-group/*",
-        Condition: {
-          "StringLike": { "aws:ResourceTag/Project": "order-tracking" }
-        }
       },
       # Borrar SGs del proyecto (Terraform destroy/replace)
       {
         Sid:    "DeleteProjectSgs",
         Effect: "Allow",
         Action: ["ec2:DeleteSecurityGroup"],
-        Resource: "arn:aws:ec2:us-east-1:${data.aws_caller_identity.this.account_id}:security-group/*",
-        Condition: {
-          "StringLike": { "aws:ResourceTag/Project": "order-tracking" }
-        }
+        Resource: "arn:aws:ec2:us-east-1:${data.aws_caller_identity.this.account_id}:security-group/*"
       },
       # Etiquetar al crear (Terraform)
       {
