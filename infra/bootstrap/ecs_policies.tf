@@ -10,16 +10,7 @@ data "aws_iam_policy_document" "ecs_task_assume_role" {
   }
 }
 
-resource "aws_iam_role" "ot_ecs_execution_role" {
-  name                 = "ot-ecs-execution-role"
-  assume_role_policy   = data.aws_iam_policy_document.ecs_task_assume_role.json
-  # Si tu cuenta exige boundary, descomenta y pasa el ARN por var:
-  # permissions_boundary = var.permissions_boundary_arn
-  tags = {
-    Project = "order-tracking"
-    Scope   = "bootstrap"
-  }
-}
+
 
 # Política administrada estándar de AWS para execution role (ECR, Logs, Secrets, KMS)
 resource "aws_iam_role_policy_attachment" "ot_ecs_execution_role_managed" {
