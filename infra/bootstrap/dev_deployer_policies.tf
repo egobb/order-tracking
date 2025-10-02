@@ -27,23 +27,20 @@ resource "aws_iam_policy" "dev_deployer_exec_access" {
   })
 }
 
-# Política para gestión de Security Groups (SG) acotada a la VPC del proyecto
+# Política para gestión de Security Groups (SG)
 resource "aws_iam_policy" "dev_deployer_ec2_sg" {
   name        = "order-tracking-dev-deployer-ec2-sg"
-  description = "Permisos de SG para env DEV, acotados a la VPC"
+  description = "Permisos de SG para env DEV"
 
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       # Crear SG en una VPC concreta
       {
-        "Sid": "CreateSecurityGroupInVpcWithTags",
-        "Effect": "Allow",
-        "Action": "ec2:CreateSecurityGroup",
-        "Resource": "*",
-        Condition: {
-          "StringLike": { "aws:ResourceTag/Project": "order-tracking" }
-        }
+        Sid: "CreateSecurityGroupInVpc",
+        Effect: "Allow",
+        Action: "ec2:CreateSecurityGroup",
+        Resource: "*"
       },
       # Autorizar reglas (ingress/egress) sobre SGs que empiecen por ot-
       {
