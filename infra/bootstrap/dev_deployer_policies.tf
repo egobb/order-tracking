@@ -37,10 +37,22 @@ resource "aws_iam_policy" "dev_deployer_ec2_sg" {
     Statement = [
       # Crear SG en una VPC concreta
       {
-        Sid:    "CreateSecurityGroupInVpc",
-        Effect: "Allow",
-        Action: ["ec2:CreateSecurityGroup"],
-        Resource: "arn:aws:ec2:us-east-1:${data.aws_caller_identity.this.account_id}:vpc/vpc-0bbd6782685efb443"
+        "Sid": "CreateSecurityGroupInVpcWithTags",
+        "Effect": "Allow",
+        "Action": "ec2:CreateSecurityGroup",
+        "Resource": "arn:aws:ec2:us-east-1:${data.aws_caller_identity.this.account_id}:security-group/*",
+        "Condition": {
+          "StringEquals": {
+            "aws:RequestedRegion": "us-east-1",
+            "aws:RequestTag/Project": "order-tracking"
+          },
+          "ForAllValues:StringEquals": {
+            "aws:TagKeys": ["Project","Env"]
+          },
+          "StringLike": {
+            "ec2:Vpc": "arn:aws:ec2:us-east-1:${data.aws_caller_identity.this.account_id}:vpc/*"
+          }
+        }
       },
       # Autorizar reglas (ingress/egress) sobre SGs que empiecen por ot-
       {
