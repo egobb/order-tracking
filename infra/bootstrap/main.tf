@@ -1,5 +1,12 @@
 data "aws_caller_identity" "this" {}
 
+
+provider "aws" {
+  # Tip: set AWS_PROFILE / AWS_REGION in your shell
+  region = var.aws_region
+  profile = "sso-egobb" # Optional, if using AWS SSO
+}
+
 terraform {
   required_version = ">= 1.7.0"
   required_providers {
@@ -8,12 +15,14 @@ terraform {
       version = "~> 5.56"
     }
   }
-}
-
-provider "aws" {
-  # Tip: set AWS_PROFILE / AWS_REGION in your shell
-  region = var.aws_region
-  profile = "sso-egobb" # Optional, if using AWS SSO
+  backend "s3" {
+    bucket         = "egobb-tf-state-us-east-1"
+    key            = "order-tracking/bootstrap/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "egobb-tf-locks"
+    encrypt        = true
+    profile        = "sso-egobb"
+  }
 }
 
 ########################
