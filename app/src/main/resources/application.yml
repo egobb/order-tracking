@@ -46,7 +46,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/orders
     username: orders
-    password: orders
+    password: orders_strong
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:

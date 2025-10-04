@@ -44,21 +44,32 @@ resource "aws_ecs_task_definition" "this" {
   execution_role_arn       = data.aws_iam_role.task_execution.arn
 
   container_definitions = jsonencode([
-
     {
       name  = "order-tracking"
       image = "${data.aws_caller_identity.this.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/order-tracking:${var.image_tag}"
-      portMappings = [{
-        containerPort = var.container_port
-        protocol      = "tcp"
-      }]
+      essential = true
+      portMappings = [{ containerPort = var.container_port, protocol = "tcp" }]
+
       environment = [
         { name = "SPRING_PROFILES_ACTIVE", value = var.spring_profile },
-        { name = "SPRING_DATASOURCE_URL", value = "jdbc:postgresql://${data.terraform_remote_state.bootstrap.outputs.rds_endpoint}:5432/${data.terraform_remote_state.bootstrap.outputs.rds_db_name}" },
+
+        # --- Kafka: MSK Serverless (IAM over TLS: puerto 9098) ---
         { name = "SPRING_KAFKA_BOOTSTRAP_SERVERS", value = data.terraform_remote_state.bootstrap.outputs.msk_bootstrap_brokers },
-        { name = "SPRING_DATASOURCE_USERNAME", valueFrom = data.terraform_remote_state.bootstrap.outputs.rds_secret_arn },
-        { name = "SPRING_DATASOURCE_PASSWORD", valueFrom = data.terraform_remote_state.bootstrap.outputs.rds_secret_arn }
+        { name = "SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL", value = "SASL_SSL" },
+        { name = "SPRING_KAFKA_PROPERTIES_SASL_MECHANISM",    value = "AWS_MSK_IAM" },
+        { name = "SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG",  value = "software.amazon.msk.auth.iam.IAMLoginModule required;" },
+        { name = "SPRING_KAFKA_PROPERTIES_SASL_CLIENT_CALLBACK_HANDLER_CLASS", value = "software.amazon.msk.auth.iam.IAMClientCallbackHandler" }
+
+        # --- (Opcional) RDS si ya lo tienes por bootstrap ---
+        { name = "SPRING_DATASOURCE_URL",      value = "jdbc:postgresql://${data.terraform_remote_state.bootstrap.outputs.rds_endpoint}:5432/${data.terraform_remote_state.bootstrap.outputs.rds_db_name}" }
       ]
+
+      # (Opcional) secrets para DB user/pass desde Secrets Manager
+      secrets = [
+         { name = "SPRING_DATASOURCE_USERNAME", valueFrom = "${data.terraform_remote_state.bootstrap.outputs.rds_secret_arn}:username::" },
+         { name = "SPRING_DATASOURCE_PASSWORD", valueFrom = "${data.terraform_remote_state.bootstrap.outputs.rds_secret_arn}:password::" }
+      ]
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {

@@ -1,36 +1,11 @@
 #####################################
-# Discover VPC & Private Subnets
-#####################################
-
-# Detecta tu VPC por tag o usa la default (ajusta el filtro si ya usas otro en el repo)
-data "aws_vpc" "this" {
-  default = true
-}
-
-# Busca subnets privadas (asumiendo que las etiquetas con "Tier=private")
-data "aws_subnets" "private" {
-  filter {
-    name   = "tag:Tier"
-    values = ["private"]
-  }
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.this.id]
-  }
-}
-
-locals {
-  private_subnet_ids = data.aws_subnets.private.ids
-}
-
-#####################################
 # RDS PostgreSQL
 #####################################
 
 # Grupo de subredes de RDS
 resource "aws_db_subnet_group" "pg" {
   name       = "ot-pg-subnets"
-  subnet_ids = local.private_subnet_ids
+  subnet_ids = local.public_subnet_ids
 }
 
 # Security Group de RDS (ingress vacío, se añadirá desde env con SG→SG)
@@ -54,8 +29,8 @@ resource "aws_secretsmanager_secret" "pg" {
 resource "aws_secretsmanager_secret_version" "pg" {
   secret_id     = aws_secretsmanager_secret.pg.id
   secret_string = jsonencode({
-    username = "order"
-    password = "orderpass-strong"
+    username = "orders"
+    password = "orders_strong"
   })
 }
 
