@@ -25,6 +25,15 @@ resource "aws_cloudwatch_log_group" "ecs" {
   retention_in_days = 14
 }
 
+data "terraform_remote_state" "bootstrap" {
+  backend = "s3"
+  config = {
+    bucket = "egobb-tf-state-us-east-1"
+    key    = "bootstrap/terraform.tfstate"
+    region = var.aws_region
+  }
+}
+
 # Task Definition
 resource "aws_ecs_task_definition" "this" {
   family                   = "order-tracking"
@@ -36,88 +45,26 @@ resource "aws_ecs_task_definition" "this" {
 
   container_definitions = jsonencode([
 
-    # --- Postgres ---
     {
-      name      = "postgres"
-      image     = "postgres:16-alpine"
-      essential = true
+      name  = "order-tracking"
+      image = "${data.aws_caller_identity.this.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/order-tracking:${var.image_tag}"
+      portMappings = [{
+        containerPort = var.container_port
+        protocol      = "tcp"
+      }]
       environment = [
-        { name = "POSTGRES_DB",       value = "ordertracking" },
-        { name = "POSTGRES_USER",     value = "order" },
-        { name = "POSTGRES_PASSWORD", value = "orderpass" }
-      ]
-      portMappings = [] # don't expose outside task
-      healthCheck = {
-        command     = ["CMD-SHELL", "pg_isready -U order -d ordertracking -h 127.0.0.1"]
-        interval    = 10
-        timeout     = 5
-        retries     = 10
-        startPeriod = 10
-      }
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          awslogs-group         = aws_cloudwatch_log_group.ecs.name
-          awslogs-region        = var.aws_region
-          awslogs-stream-prefix = "postgres"
-        }
-      }
-    },
-
-    # --- Redpanda ---
-    {
-      name      = "redpanda"
-      image     = "redpandadata/redpanda:latest"
-      essential = true
-      command = [
-        "sh","-lc",
-        "IP=$(curl -s $ECS_CONTAINER_METADATA_URI_V4 | jq -r '.Networks[0].IPv4Addresses[0]'); echo Task IP: $IP; redpanda start --mode dev --overprovisioned --smp 1 --reserve-memory 0M --memory 1024M --kafka-addr 0.0.0.0:19092 --advertise-kafka-addr ${IP}:19092"
-      ]
-      portMappings = []
-      healthCheck = {
-        command     = ["CMD-SHELL", "rpk cluster info >/dev/null 2>&1 || exit 1"]
-        interval    = 10
-        timeout     = 5
-        retries     = 10
-        startPeriod = 10
-      }
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          awslogs-group         = aws_cloudwatch_log_group.ecs.name
-          awslogs-region        = var.aws_region
-          awslogs-stream-prefix = "redpanda"
-        }
-      }
-    },
-
-    # --- Order tracking ---
-    {
-      name      = "order-tracking"
-      image     = "${data.aws_caller_identity.this.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/order-tracking:${var.image_tag}"
-      essential = true
-      portMappings = [
-        { containerPort = var.container_port, protocol = "tcp" }
-      ]
-      environment = [
-        { name = "SPRING_PROFILES_ACTIVE",     value = var.spring_profile },
-        { name = "SPRING_DATASOURCE_USERNAME", value = "orders" },
-        { name = "SPRING_DATASOURCE_PASSWORD", value = "orders" }
-      ]
-      command = [
-        "sh","-lc",
-        "IP=$(curl -s $ECS_CONTAINER_METADATA_URI_V4 | jq -r '.Networks[0].IPv4Addresses[0]'); echo Task IP: $IP; export SPRING_KAFKA_BOOTSTRAP_SERVERS=${IP}:19092; export SPRING_DATASOURCE_URL=jdbc:postgresql://${IP}:5432/ordertracking; exec java $JAVA_OPTS -jar /app/order-tracking.jar"
-      ]
-      dependsOn = [
-        { containerName = "postgres", condition = "HEALTHY" },
-        { containerName = "redpanda", condition = "HEALTHY" }
+        { name = "SPRING_PROFILES_ACTIVE", value = var.spring_profile },
+        { name = "SPRING_DATASOURCE_URL", value = "jdbc:postgresql://${data.terraform_remote_state.bootstrap.outputs.rds_endpoint}:5432/${data.terraform_remote_state.bootstrap.outputs.rds_db_name}" },
+        { name = "SPRING_KAFKA_BOOTSTRAP_SERVERS", value = data.terraform_remote_state.bootstrap.outputs.msk_bootstrap_brokers },
+        { name = "SPRING_DATASOURCE_USERNAME", valueFrom = data.terraform_remote_state.bootstrap.outputs.rds_secret_arn },
+        { name = "SPRING_DATASOURCE_PASSWORD", valueFrom = data.terraform_remote_state.bootstrap.outputs.rds_secret_arn }
       ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
           awslogs-group         = aws_cloudwatch_log_group.ecs.name
           awslogs-region        = var.aws_region
-          awslogs-stream-prefix = "app"
+          awslogs-stream-prefix = "ecs"
         }
       }
     }
