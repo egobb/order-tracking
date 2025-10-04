@@ -1,12 +1,3 @@
-# Lee outputs del bootstrap (ya lo tendrás configurado)
-data "terraform_remote_state" "bootstrap" {
-  backend = "s3"
-  config = {
-    bucket = "egobb-tf-state-us-east-1"
-    key    = "bootstrap/terraform.tfstate"
-    region = var.aws_region
-  }
-}
 
 # Inbound en el SG del MSK (definido en bootstrap) desde el SG del servicio ECS
 resource "aws_security_group_rule" "msk_ingress_from_svc" {

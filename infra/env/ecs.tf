@@ -25,15 +25,6 @@ resource "aws_cloudwatch_log_group" "ecs" {
   retention_in_days = 14
 }
 
-data "terraform_remote_state" "bootstrap" {
-  backend = "s3"
-  config = {
-    bucket = "egobb-tf-state-us-east-1"
-    key    = "bootstrap/terraform.tfstate"
-    region = var.aws_region
-  }
-}
-
 # Task Definition
 resource "aws_ecs_task_definition" "this" {
   family                   = "order-tracking"
