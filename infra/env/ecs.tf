@@ -51,7 +51,7 @@ resource "aws_ecs_task_definition" "this" {
         command     = ["CMD-SHELL", "pg_isready -U order -d ordertracking -h 127.0.0.1"]
         interval    = 10
         timeout     = 5
-        retries     = 12
+        retries     = 10
         startPeriod = 10
       }
       logConfiguration = {
@@ -84,7 +84,7 @@ resource "aws_ecs_task_definition" "this" {
         command     = ["CMD-SHELL", "rpk cluster info >/dev/null 2>&1 || exit 1"]
         interval    = 10
         timeout     = 5
-        retries     = 12
+        retries     = 10
         startPeriod = 10
       }
       logConfiguration = {
