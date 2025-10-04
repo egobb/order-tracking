@@ -70,14 +70,8 @@ resource "aws_ecs_task_definition" "this" {
       image     = "redpandadata/redpanda:latest"
       essential = true
       command = [
-        "redpanda","start",
-        "--mode","dev",
-        "--overprovisioned",
-        "--smp","1",
-        "--reserve-memory","0M",
-        "--memory","1024M",
-        "--kafka-addr","0.0.0.0:19092",
-        "--advertise-kafka-addr","127.0.0.1:19092"
+        "sh","-lc",
+        "IP=$(curl -s $ECS_CONTAINER_METADATA_URI_V4 | jq -r '.Networks[0].IPv4Addresses[0]'); echo Task IP: $IP; redpanda start --mode dev --overprovisioned --smp 1 --reserve-memory 0M --memory 1024M --kafka-addr 0.0.0.0:19092 --advertise-kafka-addr ${IP}:19092"
       ]
       portMappings = []
       healthCheck = {
@@ -106,11 +100,13 @@ resource "aws_ecs_task_definition" "this" {
         { containerPort = var.container_port, protocol = "tcp" }
       ]
       environment = [
-        { name = "SPRING_PROFILES_ACTIVE",         value = var.spring_profile },
-        { name = "SPRING_KAFKA_BOOTSTRAP_SERVERS", value = "localhost:19092" },
-        { name = "SPRING_DATASOURCE_URL",          value = "jdbc:postgresql://localhost:5432/ordertracking" },
-        { name = "SPRING_DATASOURCE_USERNAME",     value = "order" },
-        { name = "SPRING_DATASOURCE_PASSWORD",     value = "orderpass" }
+        { name = "SPRING_PROFILES_ACTIVE",     value = var.spring_profile },
+        { name = "SPRING_DATASOURCE_USERNAME", value = "orders" },
+        { name = "SPRING_DATASOURCE_PASSWORD", value = "orders" }
+      ]
+      command = [
+        "sh","-lc",
+        "IP=$(curl -s $ECS_CONTAINER_METADATA_URI_V4 | jq -r '.Networks[0].IPv4Addresses[0]'); echo Task IP: $IP; export SPRING_KAFKA_BOOTSTRAP_SERVERS=${IP}:19092; export SPRING_DATASOURCE_URL=jdbc:postgresql://${IP}:5432/ordertracking; exec java $JAVA_OPTS -jar /app/order-tracking.jar"
       ]
       dependsOn = [
         { containerName = "postgres", condition = "HEALTHY" },
