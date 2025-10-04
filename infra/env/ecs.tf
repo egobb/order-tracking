@@ -49,7 +49,7 @@ resource "aws_ecs_task_definition" "this" {
         { name = "SPRING_KAFKA_PROPERTIES_SECURITY_PROTOCOL", value = "SASL_SSL" },
         { name = "SPRING_KAFKA_PROPERTIES_SASL_MECHANISM",    value = "AWS_MSK_IAM" },
         { name = "SPRING_KAFKA_PROPERTIES_SASL_JAAS_CONFIG",  value = "software.amazon.msk.auth.iam.IAMLoginModule required;" },
-        { name = "SPRING_KAFKA_PROPERTIES_SASL_CLIENT_CALLBACK_HANDLER_CLASS", value = "software.amazon.msk.auth.iam.IAMClientCallbackHandler" }
+        { name = "SPRING_KAFKA_PROPERTIES_SASL_CLIENT_CALLBACK_HANDLER_CLASS", value = "software.amazon.msk.auth.iam.IAMClientCallbackHandler" },
 
         # --- (Opcional) RDS si ya lo tienes por bootstrap ---
         { name = "SPRING_DATASOURCE_URL",      value = "jdbc:postgresql://${data.terraform_remote_state.bootstrap.outputs.rds_endpoint}:5432/${data.terraform_remote_state.bootstrap.outputs.rds_db_name}" }
