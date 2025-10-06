@@ -53,7 +53,7 @@ jobs:
         run: |
           terraform plan \
             -var="image_tag=${{ github.sha }}" \
-            -var="spring_profile=default" \
+            -var="spring_profile=pg" \
             -var="enable_https=false"
 
       - name: Terraform Apply
@@ -61,7 +61,7 @@ jobs:
         run: |
           terraform apply -auto-approve \
             -var="image_tag=${{ github.sha }}" \
-            -var="spring_profile=default" \
+            -var="spring_profile=pg" \
             -var="enable_https=false"
 
       - name: Show URL
