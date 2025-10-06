@@ -18,4 +18,26 @@ resource "aws_iam_role_policy_attachment" "ot_ecs_execution_role_managed" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-# (Opcional) Si usas parámetros/ssm extra, añade adjuntos aquí.
+resource "aws_iam_role_policy" "ot_ecs_execution_role_secrets" {
+  name = "allow-secretsmanager-get"
+  role = aws_iam_role.ot_ecs_execution_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid    = "SecretsRead",
+        Effect = "Allow",
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ],
+        Resource = [
+          # Prefijo del secreto de Postgres (usa wildcard por el sufijo aleatorio)
+          "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.this.account_id}:secret:ot/rds/postgres-*"
+
+        ]
+      }
+    ]
+  })
+}

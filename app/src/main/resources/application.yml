@@ -44,10 +44,11 @@ spring:
     activate:
       on-profile: pg
   datasource:
-    url: jdbc:postgresql://localhost:5432/orders
-    username: orders
-    password: orders_strong
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/orders}
+    username: ${SPRING_DATASOURCE_USERNAME:orders}
+    password: ${SPRING_DATASOURCE_PASSWORD:orders_strong}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
