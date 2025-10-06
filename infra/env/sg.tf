@@ -8,3 +8,13 @@ resource "aws_security_group_rule" "msk_ingress_from_svc" {
   protocol                 = "tcp"
   source_security_group_id = aws_security_group.svc.id  # tu SG del servicio ECS
 }
+
+resource "aws_security_group_rule" "rds_from_ecs_5432" {
+  type                     = "ingress"
+  security_group_id        = data.terraform_remote_state.bootstrap.outputs.rds_sg_id        # <-- SG de RDS
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.svc.id  # <-- SG de ECS
+  description              = "Allow Postgres from ECS service"
+}
