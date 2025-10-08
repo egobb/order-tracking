@@ -10,7 +10,7 @@ variable "image_tag" {
 
 variable "spring_profile" {
   type    = string
-  default = "pg" # "default" (H2) o "pg"
+  default = "aws"
 }
 
 variable "task_cpu" {

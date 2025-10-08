@@ -6,7 +6,8 @@ resource "aws_security_group_rule" "msk_ingress_from_svc" {
   from_port                = 9098
   to_port                  = 9098
   protocol                 = "tcp"
-  source_security_group_id = aws_security_group.svc.id  # tu SG del servicio ECS
+  source_security_group_id = aws_security_group.svc.id
+  description              = "Allow MSK IAM TLS (9098) from ECS service"
 }
 
 resource "aws_security_group_rule" "rds_from_ecs_5432" {
@@ -18,3 +19,4 @@ resource "aws_security_group_rule" "rds_from_ecs_5432" {
   source_security_group_id = aws_security_group.svc.id  # <-- SG de ECS
   description              = "Allow Postgres from ECS service"
 }
+

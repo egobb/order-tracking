@@ -41,3 +41,50 @@ resource "aws_iam_role_policy" "ot_ecs_execution_role_secrets" {
     ]
   })
 }
+
+
+resource "aws_iam_role_policy" "task_kafka_iam" {
+  name = "allow-msk-serverless-iam"
+  role = aws_iam_role.ot_ecs_execution_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect: "Allow",
+        Action: [
+          "kafka-cluster:Connect",
+          "kafka-cluster:DescribeCluster"
+        ],
+        Resource: "*"
+      },
+      {
+        Effect: "Allow",
+        Action: [
+          "kafka-cluster:DescribeTopic",
+          "kafka-cluster:ReadData",
+          "kafka-cluster:WriteData"
+        ],
+        Resource: "*",
+      },
+       {
+        Effect: "Allow",
+         Action: [
+           "kafka-cluster:CreateTopic",
+           "kafka-cluster:AlterTopic"
+         ],
+         Resource: "*",
+       } ,
+      # Consumer groups
+      {
+        Effect: "Allow",
+        Action: [
+          "kafka-cluster:DescribeGroup",
+          "kafka-cluster:AlterGroup",
+          "kafka-cluster:JoinGroup"
+        ],
+        Resource: "*"
+      }
+    ]
+  })
+}
