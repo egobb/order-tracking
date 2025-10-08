@@ -32,11 +32,6 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <dependency>
-        <groupId>software.amazon.msk</groupId>
-        <artifactId>aws-msk-iam-auth</artifactId>
-        <version>2.0.3</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -129,6 +124,11 @@
       <artifactId>kafka</artifactId>
       <version>1.20.4</version> <!-- o la última versión estable -->
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.msk</groupId>
+      <artifactId>aws-msk-iam-auth</artifactId>
+      <version>2.0.3</version>
     </dependency>
   </dependencies>
 
