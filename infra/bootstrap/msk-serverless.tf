@@ -44,3 +44,7 @@ output "msk_bootstrap_brokers" {
 output "msk_sg_id" {
   value = aws_security_group.msk.id
 }
+
+output "msk_client_subnet_ids" {
+  value = aws_msk_serverless_cluster.this.vpc_config[0].subnet_ids
+}
