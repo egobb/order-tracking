@@ -45,7 +45,7 @@ resource "aws_iam_role_policy" "ot_ecs_execution_role_secrets" {
 
 resource "aws_iam_role_policy" "task_kafka_iam" {
   name = "allow-msk-serverless-iam"
-  role = aws_iam_role.ot_ecs_execution_role.id
+  role = aws_iam_role.ecs_task_role.id
 
   policy = jsonencode({
     Version = "2012-10-17",
