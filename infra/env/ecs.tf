@@ -33,6 +33,7 @@ resource "aws_ecs_task_definition" "this" {
   cpu                      = var.task_cpu
   memory                   = var.task_memory
   execution_role_arn       = data.aws_iam_role.task_execution.arn
+  task_role_arn            = data.terraform_remote_state.bootstrap.outputs.ecs_task_role_arn
 
   container_definitions = jsonencode([
     {
