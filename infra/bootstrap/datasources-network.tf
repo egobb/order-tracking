@@ -29,3 +29,11 @@ locals {
     if s.map_public_ip_on_launch && !contains(local.unsupported_azs, s.availability_zone)
   ]
 }
+
+output "vpc_id" {
+  value = local.vpc_id
+}
+
+output "public_subnet_ids" {
+  value = local.public_subnet_ids
+}
