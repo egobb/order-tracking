@@ -26,10 +26,10 @@ logs-adminer: ## Show logs of Adminer container
 ## --- Application commands ---
 
 run: ## Start the app with in-memory (H2) profile for quick development
-	$(MVN) -q -Dspring-boot.run.profiles=dev spring-boot:run
+	$(MVN) -q -Dspring-boot.run.profiles=local-h2 spring-boot:run
 
 run-pg: ## Start the app against Postgres (requires 'make up' and .env configured)
-	$(MVN) -q -Dspring-boot.run.profiles=pg spring-boot:run
+	$(MVN) -q -Dspring-boot.run.profiles=local-pg spring-boot:run
 
 test: ## Run all tests
 	$(MVN) -q -B verify

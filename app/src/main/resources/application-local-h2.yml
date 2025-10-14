@@ -1,0 +1,18 @@
+# ===================== local-h2 =====================
+spring:
+  config:
+    activate:
+      on-profile: local-h2
+
+  datasource:
+    url: jdbc:h2:mem:demo;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: sa
+  jpa:
+    # Con H2 usa su propio dialecto para evitar warnings
+    database-platform: org.hibernate.dialect.H2Dialect
+
+  kafka:
+    # Redpanda local, sin seguridad
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:19092}

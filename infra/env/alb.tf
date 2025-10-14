@@ -1,17 +1,17 @@
-########################
-# Application Load Balancer
-# HTTP by default, optional HTTPS if enable_https=true
-########################
-
+# Application Load Balancer for the service.
+# Placed in public subnets so it can accept internet traffic; the ECS tasks will live
+# in private or public subnets behind it. Security is enforced by the ALB SG and target SGs.
 resource "aws_lb" "this" {
   name               = "ot-alb"
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
   subnets            = local.public_subnet_ids
-  idle_timeout       = 60
+  idle_timeout       = 60 # Keep-alive long enough for typical HTTP clients; tune per workload.
 }
 
-# Target Group al que el ALB enviará tráfico
+# Target group receiving traffic from the ALB.
+# target_type = "ip" is required for Fargate (no instance IDs to register).
+# Health check points to /actuator/health by default; adjust to your app's probe endpoint.
 resource "aws_lb_target_group" "this" {
   name        = "ot-tg"
   port        = var.container_port
@@ -20,16 +20,16 @@ resource "aws_lb_target_group" "this" {
   target_type = "ip"
 
   health_check {
-    # cambia si tu app no tiene actuator
     path                = "/actuator/health"
-    matcher             = "200-399"
+    matcher             = "200-399"   # Consider 200-299 if your app returns strict OK.
     interval            = 30
     healthy_threshold   = 2
     unhealthy_threshold = 5
   }
 }
 
-# Listener HTTP (puerto 80) que forwardea al TG
+# HTTP listener on port 80 forwarding all requests to the target group.
+# HTTPS can be added with a second listener (443) when a certificate and domain are ready.
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.this.arn
   port              = 80
@@ -40,3 +40,9 @@ resource "aws_lb_listener" "http" {
     target_group_arn = aws_lb_target_group.this.arn
   }
 }
+
+# -------------------------------------------------------------------
+# - Keeping an HTTP listener simplifies early bootstrap and health-check validation.
+#   Once the domain and certificate are available, add HTTPS and redirect HTTP->HTTPS.
+# - target_type "ip" matches ECS Fargate tasks and allows per-task registration.
+# -------------------------------------------------------------------
