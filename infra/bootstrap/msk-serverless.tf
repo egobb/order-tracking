@@ -26,6 +26,7 @@ resource "aws_msk_serverless_cluster" "this" {
 
   vpc_config {
     subnet_ids = local.public_subnet_ids
+    security_group_ids = [aws_security_group.msk.id]
   }
 
   client_authentication {
