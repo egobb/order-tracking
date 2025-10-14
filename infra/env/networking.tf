@@ -3,7 +3,7 @@
 # Outbound: allow all traffic (needed for health checks, ALB to backends, etc.).
 resource "aws_security_group" "alb" {
   name        = "ot-alb-sg"
-  description = "ALB security group: HTTP/HTTPS in, all traffic out"
+  description = "ALB 80/443 in, all out"
   vpc_id      = local.vpc_id
 
   # Always open port 80 for HTTP.

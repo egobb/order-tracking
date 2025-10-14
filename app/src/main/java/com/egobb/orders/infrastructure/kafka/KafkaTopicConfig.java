@@ -8,9 +8,8 @@ import org.springframework.kafka.config.TopicBuilder;
 @Configuration
 public class KafkaTopicConfig {
 
-	@Bean
-	public NewTopic trackingEventsTopic() {
-		return TopicBuilder.name(KafkaTopics.TRACKING_EVENTS).partitions(6).build();
-	}
-
+  @Bean
+  public NewTopic trackingEventsTopic() {
+    return TopicBuilder.name(KafkaTopics.TRACKING_EVENTS).partitions(6).build();
+  }
 }
