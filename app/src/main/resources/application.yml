@@ -1,18 +1,14 @@
 spring:
   application:
     name: order-tracking
-  datasource:
-    url: jdbc:h2:mem:demo;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: sa
+
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate.format_sql: true
+
   kafka:
-    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
     producer:
       acks: all
       retries: 10
@@ -25,29 +21,14 @@ spring:
       auto-offset-reset: latest
       properties:
         isolation.level: read_committed
+        spring.json.trusted.packages: "com.egobb.*"
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      value:
-        default:
-          type: com.egobb.ordertracking.events.TrackingEvent
-      properties.spring.json.trusted.packages: "com.egobb.*"
     listener:
-      ack-mode: RECORD  # o BATCH si quieres commits por lote
+      ack-mode: RECORD
+
 management:
   endpoints:
     web:
       exposure:
         include: health,info,metrics,prometheus
----
-spring:
-  config:
-    activate:
-      on-profile: pg
-  datasource:
-    url: jdbc:postgresql://localhost:5432/orders
-    username: orders
-    password: orders
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update

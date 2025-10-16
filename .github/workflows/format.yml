@@ -1,7 +1,7 @@
 name: Format check
 on:
   pull_request:
-    branches: [main]
+    branches: [develop, main]
 
 jobs:
   format:

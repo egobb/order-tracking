@@ -2,7 +2,7 @@ name: PR Title (Conventional Commits)
 
 on:
   pull_request_target:
-    branches: [main]
+    branches: [develop, main]
     types: [opened, edited, synchronize, reopened, ready_for_review]
 
 permissions:
@@ -26,5 +26,6 @@ jobs:
             build
             ci
             revert
+            release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
