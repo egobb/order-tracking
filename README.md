@@ -171,10 +171,24 @@ Sends one or more events. The service validates transitions and returns, for eac
 
 ---
 
+## Infrastructure (AWS Preproduction)
+
+This project includes a Terraform setup to deploy a **preproduction environment** on AWS.  
+The goal is to have a production-like stack running in ECS, backed by MSK (Kafka) and RDS (Postgres), with CI/CD through GitHub Actions.
+
+⚠️ Note: this is **not a real production setup**.  
+For simplicity and cost reasons, some concessions are in place:
+- MSK and RDS are provisioned in **public subnets** instead of private ones.
+- No multi-AZ or high-availability guarantees.
+- Minimal instance sizes and capacity.
+
+See the dedicated [infra/README.md](infra/README.md) for full details on bootstrap, environments, and CI/CD integration.
+
+---
+
 ## 🗺️ Roadmap / Ideas
 
 - **Scalability**: multiple Kafka consumers (parallelism, partition-based).
-- **CI/CD**: automated deployments to **AWS** using **Terraform/Pulumi**.
 - **API Gateway + policies**: rate limits, auth offloading.
 - **Security foundations**: JWT/OAuth2, input fuzzing.
 - **Observability**: Grafana dashboards for Kafka + DB.
