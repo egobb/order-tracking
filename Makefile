@@ -32,7 +32,7 @@ run-pg: ## Start the app against Postgres (requires 'make up' and .env configure
 	$(MVN) -q -Dspring-boot.run.profiles=local-pg spring-boot:run
 
 test: ## Run all tests
-	$(MVN) -q -B verify
+	$(MVN) -B verify
 
 fmt: ## Format code with Maven plugin
 	$(MVN) -q spotless:apply

@@ -1,7 +1,9 @@
 package com.egobb.orders.domain.ports;
 
-import com.egobb.orders.domain.event.TrackingEvent;
+import com.egobb.orders.domain.event.DomainEvent;
+
+import java.util.List;
 
 public interface EventAppender {
-  void append(TrackingEvent event);
+	void append(List<DomainEvent> event);
 }
