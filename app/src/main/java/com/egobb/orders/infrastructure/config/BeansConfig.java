@@ -6,8 +6,8 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class BeansConfig {
-	@Bean
-	StateMachine stateMachine() {
-		return new StateMachine();
-	}
+  @Bean
+  StateMachine stateMachine() {
+    return new StateMachine();
+  }
 }

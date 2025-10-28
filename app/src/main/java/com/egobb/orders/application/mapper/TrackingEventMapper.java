@@ -9,8 +9,7 @@ import org.mapstruct.Mapper;
 @Mapper
 public interface TrackingEventMapper {
 
-	TrackingEventReceived toDomain(final EnqueueTrackingEventCmd enqueueTrackingEventCmd);
+  TrackingEventReceived toDomain(final EnqueueTrackingEventCmd enqueueTrackingEventCmd);
 
-	TrackingEventVo toDomain(final ProcessTrackingEventCmd processTrackingEventCmd);
-
+  TrackingEventVo toDomain(final ProcessTrackingEventCmd processTrackingEventCmd);
 }

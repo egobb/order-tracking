@@ -11,22 +11,24 @@ import org.springframework.stereotype.Component;
 @Component
 public class EnqueueTrackingEventCmdHandler implements CommandHandler<EnqueueTrackingEventCmd> {
 
-	private final PublishDomainEventPort publisher;
-	private final TrackingEventMapper trackingEventMapper;
+  private final PublishDomainEventPort publisher;
+  private final TrackingEventMapper trackingEventMapper;
 
-	public EnqueueTrackingEventCmdHandler(PublishDomainEventPort publisher, TrackingEventMapper trackingEventMapper) {
-		this.publisher = publisher;
-		this.trackingEventMapper = trackingEventMapper;
-	}
+  public EnqueueTrackingEventCmdHandler(
+      PublishDomainEventPort publisher, TrackingEventMapper trackingEventMapper) {
+    this.publisher = publisher;
+    this.trackingEventMapper = trackingEventMapper;
+  }
 
-	@Override
-	public Void handle(EnqueueTrackingEventCmd cmd) {
-		Try.of(() -> cmd).map(this.trackingEventMapper::toDomain).map(this::emitDomainEvents).get();
-		return null;
-	}
+  @Override
+  public Void handle(EnqueueTrackingEventCmd cmd) {
+    Try.of(() -> cmd).map(this.trackingEventMapper::toDomain).map(this::emitDomainEvents).get();
+    return null;
+  }
 
-	private TrackingEventReceived emitDomainEvents(final TrackingEventReceived trackingEventReceived) {
-		this.publisher.publish(trackingEventReceived);
-		return trackingEventReceived;
-	}
+  private TrackingEventReceived emitDomainEvents(
+      final TrackingEventReceived trackingEventReceived) {
+    this.publisher.publish(trackingEventReceived);
+    return trackingEventReceived;
+  }
 }

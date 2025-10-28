@@ -12,30 +12,34 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProcessTrackingEventCmdHandler implements CommandHandler<ProcessTrackingEventCmd> {
 
-	private final PublishDomainEventPort publisher;
-	private final TrackingEventMapper trackingEventMapper;
-	private final TrackingService trackingService;
+  private final PublishDomainEventPort publisher;
+  private final TrackingEventMapper trackingEventMapper;
+  private final TrackingService trackingService;
 
-	public ProcessTrackingEventCmdHandler(PublishDomainEventPort publisher, TrackingEventMapper trackingEventMapper,
-			TrackingService trackingService) {
-		this.publisher = publisher;
-		this.trackingEventMapper = trackingEventMapper;
-		this.trackingService = trackingService;
-	}
+  public ProcessTrackingEventCmdHandler(
+      PublishDomainEventPort publisher,
+      TrackingEventMapper trackingEventMapper,
+      TrackingService trackingService) {
+    this.publisher = publisher;
+    this.trackingEventMapper = trackingEventMapper;
+    this.trackingService = trackingService;
+  }
 
-	@Override
-	public Void handle(ProcessTrackingEventCmd cmd) {
-		Try.of(() -> cmd).map(this.trackingEventMapper::toDomain).map(this.trackingService::process)
-				.map(this::emitDomainEvents).get();
+  @Override
+  public Void handle(ProcessTrackingEventCmd cmd) {
+    Try.of(() -> cmd)
+        .map(this.trackingEventMapper::toDomain)
+        .map(this.trackingService::process)
+        .map(this::emitDomainEvents)
+        .get();
 
-		return null;
-	}
+    return null;
+  }
 
-	private OrderTimeline emitDomainEvents(final OrderTimeline orderTimeline) {
-		for (final var event : orderTimeline.getDomainEvents()) {
-			this.publisher.publish(event);
-		}
-		return orderTimeline;
-	}
-
+  private OrderTimeline emitDomainEvents(final OrderTimeline orderTimeline) {
+    for (final var event : orderTimeline.getDomainEvents()) {
+      this.publisher.publish(event);
+    }
+    return orderTimeline;
+  }
 }

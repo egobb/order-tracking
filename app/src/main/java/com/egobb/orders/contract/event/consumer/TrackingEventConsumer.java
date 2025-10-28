@@ -13,12 +13,15 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class TrackingEventConsumer {
 
-	private final TrackingService processor;
+  private final TrackingService processor;
 
-	@KafkaListener(topics = KafkaTopics.TRACKING_EVENTS, groupId = "order-tracking-processor", concurrency = "6")
-	public void onMessage(TrackingEventMapper.TrackingEventMsg msg) {
-		log.info(">>> Consumed from Kafka: {}", msg);
-		final var domain = TrackingEventMapper.toDomain(msg);
-		this.processor.process(domain);
-	}
+  @KafkaListener(
+      topics = KafkaTopics.TRACKING_EVENTS,
+      groupId = "order-tracking-processor",
+      concurrency = "6")
+  public void onMessage(TrackingEventMapper.TrackingEventMsg msg) {
+    log.info(">>> Consumed from Kafka: {}", msg);
+    final var domain = TrackingEventMapper.toDomain(msg);
+    this.processor.process(domain);
+  }
 }

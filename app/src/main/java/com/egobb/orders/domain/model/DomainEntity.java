@@ -1,4 +1,3 @@
 package com.egobb.orders.domain.model;
 
-public interface DomainEntity {
-}
+public interface DomainEntity {}

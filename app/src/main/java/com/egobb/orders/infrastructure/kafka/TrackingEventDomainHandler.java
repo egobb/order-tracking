@@ -12,18 +12,18 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class TrackingEventDomainHandler implements PublishDomainEventPort {
 
-	private final TrackingEventPublisher publisher;
+  private final TrackingEventPublisher publisher;
 
-	@Override
-	public void publish(DomainEvent event) {
-		this.onDomainEvent(event);
-	}
+  @Override
+  public void publish(DomainEvent event) {
+    this.onDomainEvent(event);
+  }
 
-	@EventListener
-	public void onDomainEvent(DomainEvent event) {
-		if (event instanceof TrackingEventReceived ev) {
-			final var msg = TrackingEventMapper.toMsg(ev);
-			this.publisher.publish(ev.orderId(), msg);
-		}
-	}
+  @EventListener
+  public void onDomainEvent(DomainEvent event) {
+    if (event instanceof TrackingEventReceived ev) {
+      final var msg = TrackingEventMapper.toMsg(ev);
+      this.publisher.publish(ev.orderId(), msg);
+    }
+  }
 }

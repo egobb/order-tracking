@@ -17,14 +17,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class TrackingController {
 
-	private final TrackingEventMapper trackingEventMapper;
+  private final TrackingEventMapper trackingEventMapper;
 
-	private final EnqueueTrackingEventCmdHandler enqueueTrackingEventCmdHandler;
+  private final EnqueueTrackingEventCmdHandler enqueueTrackingEventCmdHandler;
 
-	@PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	public ResponseEntity<Void> ingest(@Valid @RequestBody TrackingEventsDTO body) {
-		this.trackingEventMapper.toEnqueueCmdList(body).forEach(this.enqueueTrackingEventCmdHandler::handle);
-		return ResponseEntity.accepted().build();
-	}
-
+  @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+  public ResponseEntity<Void> ingest(@Valid @RequestBody TrackingEventsDTO body) {
+    this.trackingEventMapper
+        .toEnqueueCmdList(body)
+        .forEach(this.enqueueTrackingEventCmdHandler::handle);
+    return ResponseEntity.accepted().build();
+  }
 }
