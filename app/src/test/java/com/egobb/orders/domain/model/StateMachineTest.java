@@ -1,7 +1,5 @@
-package com.egobb.orders.domain;
+package com.egobb.orders.domain.model;
 
-import com.egobb.orders.domain.model.StateMachine;
-import com.egobb.orders.domain.model.Status;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;

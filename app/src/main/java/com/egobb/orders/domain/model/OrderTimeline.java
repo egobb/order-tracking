@@ -1,7 +1,5 @@
 package com.egobb.orders.domain.model;
 
-import com.egobb.orders.domain.event.AggregationRoot;
-import com.egobb.orders.domain.event.DomainEntity;
 import com.egobb.orders.domain.event.TrackingEventUpdated;
 import com.egobb.orders.domain.vo.TrackingEventVo;
 

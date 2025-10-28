@@ -1,5 +1,6 @@
-package com.egobb.orders.domain.event;
+package com.egobb.orders.domain.model;
 
+import com.egobb.orders.domain.event.DomainEvent;
 import lombok.NonNull;
 
 import java.util.LinkedList;
