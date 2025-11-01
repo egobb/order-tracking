@@ -1,10 +1,12 @@
 package com.egobb.orders.infrastructure.persistence;
 
-import com.egobb.orders.domain.event.TrackingEvent;
+import com.egobb.orders.domain.event.DomainEvent;
+import com.egobb.orders.domain.event.TrackingEventUpdated;
 import com.egobb.orders.domain.ports.EventAppender;
 import com.egobb.orders.infrastructure.persistence.jpa.TrackingEventEntity;
 import com.egobb.orders.infrastructure.persistence.jpa.TrackingEventJpaRepository;
 import java.time.Instant;
+import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,7 +18,13 @@ public class EventAppenderAdapter implements EventAppender {
   }
 
   @Override
-  public void append(TrackingEvent e) {
-    this.repo.save(new TrackingEventEntity(e.orderId(), e.status(), e.eventTs(), Instant.now()));
+  public void append(List<DomainEvent> events) {
+    for (final DomainEvent e : events) {
+      if (!(e instanceof TrackingEventUpdated event)) {
+        continue;
+      }
+      this.repo.save(
+          new TrackingEventEntity(event.orderId(), event.status(), event.eventTs(), Instant.now()));
+    }
   }
 }

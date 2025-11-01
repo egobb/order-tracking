@@ -1,6 +1,6 @@
 package com.egobb.orders.infrastructure.kafka;
 
-import com.egobb.orders.infrastructure.mapper.TrackingEventMapper;
+import com.egobb.orders.contract.event.mapper.TrackingEventMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;

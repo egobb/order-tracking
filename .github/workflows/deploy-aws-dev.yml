@@ -4,7 +4,7 @@ on:
   push:
     branches: ['feature/infra-aws', 'develop']
     pull_request: { branches: [develop] }
-  workflow_dispatch:
+  workflow_dispatch: # just manual trigger
 
 permissions:
   id-token: write    # needed for OIDC

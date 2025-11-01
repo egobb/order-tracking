@@ -1,6 +1,6 @@
 package com.egobb.orders.infrastructure.config;
 
-import com.egobb.orders.domain.service.StateMachine;
+import com.egobb.orders.domain.model.StateMachine;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

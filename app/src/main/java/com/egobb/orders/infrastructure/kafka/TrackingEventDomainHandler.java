@@ -1,9 +1,9 @@
 package com.egobb.orders.infrastructure.kafka;
 
 import com.egobb.orders.application.port.out.PublishDomainEventPort;
+import com.egobb.orders.contract.event.mapper.TrackingEventMapper;
 import com.egobb.orders.domain.event.DomainEvent;
-import com.egobb.orders.domain.event.TrackingEvent;
-import com.egobb.orders.infrastructure.mapper.TrackingEventMapper;
+import com.egobb.orders.domain.event.TrackingEventReceived;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -21,7 +21,7 @@ public class TrackingEventDomainHandler implements PublishDomainEventPort {
 
   @EventListener
   public void onDomainEvent(DomainEvent event) {
-    if (event instanceof TrackingEvent ev) {
+    if (event instanceof TrackingEventReceived ev) {
       final var msg = TrackingEventMapper.toMsg(ev);
       this.publisher.publish(ev.orderId(), msg);
     }

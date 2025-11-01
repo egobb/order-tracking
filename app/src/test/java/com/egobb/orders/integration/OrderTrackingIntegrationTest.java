@@ -7,8 +7,8 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 
 import com.egobb.orders.Application;
-import com.egobb.orders.application.service.TrackingProcessor;
-import com.egobb.orders.domain.event.TrackingEvent;
+import com.egobb.orders.domain.service.TrackingService;
+import com.egobb.orders.domain.vo.TrackingEventVo;
 import io.restassured.RestAssured;
 import java.time.Instant;
 import java.util.Comparator;
@@ -48,9 +48,9 @@ public class OrderTrackingIntegrationTest {
 
   @LocalServerPort int port;
 
-  @SpyBean TrackingProcessor trackingProcessor;
+  @SpyBean TrackingService trackingService;
 
-  @Captor ArgumentCaptor<TrackingEvent> eventCaptor;
+  @Captor ArgumentCaptor<TrackingEventVo> eventCaptor;
 
   @BeforeAll
   static void setup() {
@@ -85,15 +85,15 @@ public class OrderTrackingIntegrationTest {
         .statusCode(202);
 
     // Then: processor is invoked once per event
-    Mockito.verify(this.trackingProcessor, timeout(10_000).times(5))
-        .processOne(any(TrackingEvent.class));
+    Mockito.verify(this.trackingService, timeout(10_000).times(5))
+        .process(any(TrackingEventVo.class));
 
-    Mockito.verify(this.trackingProcessor, times(5)).processOne(this.eventCaptor.capture());
+    Mockito.verify(this.trackingService, times(5)).process(this.eventCaptor.capture());
     final var processed = this.eventCaptor.getAllValues();
 
     // Group by orderId
-    final Map<String, List<TrackingEvent>> byOrder =
-        processed.stream().collect(Collectors.groupingBy(TrackingEvent::orderId));
+    final Map<String, List<TrackingEventVo>> byOrder =
+        processed.stream().collect(Collectors.groupingBy(TrackingEventVo::orderId));
 
     // Cardinality
     assertThat(byOrder.get("A-1")).hasSize(3);
@@ -104,9 +104,9 @@ public class OrderTrackingIntegrationTest {
     assertOrderedByTimestamp(byOrder.get("B-1"));
   }
 
-  private static void assertOrderedByTimestamp(List<TrackingEvent> events) {
+  private static void assertOrderedByTimestamp(List<TrackingEventVo> events) {
     final var sorted =
-        events.stream().sorted(Comparator.comparing(TrackingEvent::eventTs)).toList();
+        events.stream().sorted(Comparator.comparing(TrackingEventVo::eventTs)).toList();
     assertThat(events).containsExactlyElementsOf(sorted);
   }
 }

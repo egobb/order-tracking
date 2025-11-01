@@ -1,38 +1,32 @@
-package com.egobb.orders.application.service;
+package com.egobb.orders.domain.service;
 
-import com.egobb.orders.domain.event.TrackingEvent;
 import com.egobb.orders.domain.model.OrderTimeline;
 import com.egobb.orders.domain.ports.EventAppender;
 import com.egobb.orders.domain.ports.OrderTimelineRepository;
-import com.egobb.orders.domain.service.StateMachine;
+import com.egobb.orders.domain.vo.TrackingEventVo;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-public class TrackingProcessor {
+public class TrackingService {
   private final OrderTimelineRepository repository;
   private final EventAppender appender;
-  private final StateMachine sm;
 
-  public TrackingProcessor(
-      OrderTimelineRepository repository, EventAppender appender, StateMachine sm) {
+  public TrackingService(OrderTimelineRepository repository, EventAppender appender) {
     this.repository = repository;
     this.appender = appender;
-    this.sm = sm;
   }
 
-  public void processOne(TrackingEvent e) {
+  public OrderTimeline process(TrackingEventVo e) {
     log.info(">>> Processing event: {}", e);
     final Optional<OrderTimeline> maybe = this.repository.findById(e.orderId());
     final OrderTimeline tl = maybe.orElse(new OrderTimeline(e.orderId(), null, null));
-    if (!this.sm.canTransition(tl.lastStatus(), e.status())) {
-      // TODO: Emit functional metrics
-      return;
+    if (tl.register(e)) {
+      this.repository.save(tl);
+      this.appender.append(tl.getDomainEvents());
     }
-    tl.apply(e.status(), e.eventTs());
-    this.repository.save(tl);
-    this.appender.append(e);
+    return tl;
   }
 }

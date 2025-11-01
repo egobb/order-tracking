@@ -1,8 +1,10 @@
 package com.egobb.orders.domain.model;
 
+import com.egobb.orders.domain.event.TrackingEventUpdated;
+import com.egobb.orders.domain.vo.TrackingEventVo;
 import java.time.Instant;
 
-public class OrderTimeline {
+public class OrderTimeline extends AggregationRoot implements DomainEntity {
   private final String orderId;
   private Status lastStatus;
   private Instant deliveredAt;
@@ -25,7 +27,17 @@ public class OrderTimeline {
     return this.deliveredAt;
   }
 
-  public void apply(Status next, Instant when) {
+  public boolean register(TrackingEventVo ev) {
+    if (!StateMachine.canTransition(this.lastStatus(), ev.status())) {
+      // TODO: Emit functional metrics
+      return false;
+    }
+    this.apply(ev.status(), ev.eventTs());
+    this.addDomainEvent(new TrackingEventUpdated(this.orderId, ev.status(), ev.eventTs()));
+    return true;
+  }
+
+  private void apply(Status next, Instant when) {
     this.lastStatus = next;
     if (next.isFinal()) this.deliveredAt = when;
   }

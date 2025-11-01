@@ -1,4 +1,4 @@
-package com.egobb.orders.infrastructure.web.dto;
+package com.egobb.orders.contract.rest.controller.dto;
 
 import com.egobb.orders.domain.model.Status;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;

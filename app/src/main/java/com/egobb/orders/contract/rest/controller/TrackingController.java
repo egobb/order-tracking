@@ -1,12 +1,9 @@
-package com.egobb.orders.infrastructure.web;
+package com.egobb.orders.contract.rest.controller;
 
-import com.egobb.orders.application.port.in.ProcessTrackingUseCase;
-import com.egobb.orders.domain.event.TrackingEvent;
-import com.egobb.orders.infrastructure.web.dto.TrackingEventDTO;
-import com.egobb.orders.infrastructure.web.dto.TrackingEventsDTO;
+import com.egobb.orders.application.handler.EnqueueTrackingEventCmdHandler;
+import com.egobb.orders.contract.rest.controller.dto.TrackingEventsDTO;
+import com.egobb.orders.contract.rest.controller.mapper.TrackingEventMapper;
 import jakarta.validation.Valid;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,17 +17,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class TrackingController {
 
-  private final ProcessTrackingUseCase useCase;
+  private final TrackingEventMapper trackingEventMapper;
+
+  private final EnqueueTrackingEventCmdHandler enqueueTrackingEventCmdHandler;
 
   @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
   public ResponseEntity<Void> ingest(@Valid @RequestBody TrackingEventsDTO body) {
-    final List<TrackingEvent> events =
-        body.event.stream().map(this::toDomain).collect(Collectors.toList());
-    this.useCase.ingestBatch(events);
+    this.trackingEventMapper
+        .toEnqueueCmdList(body)
+        .forEach(this.enqueueTrackingEventCmdHandler::handle);
     return ResponseEntity.accepted().build();
-  }
-
-  private TrackingEvent toDomain(TrackingEventDTO d) {
-    return new TrackingEvent(d.orderId, d.status, d.eventTs);
   }
 }

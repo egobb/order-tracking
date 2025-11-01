@@ -1,4 +1,4 @@
-package com.egobb.orders.infrastructure.web.dto;
+package com.egobb.orders.contract.rest.controller.dto;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
