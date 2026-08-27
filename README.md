@@ -1,6 +1,13 @@
 # Order Tracking Service
 
-A production-style **Spring Boot 3** and Kafka service that ingests order-tracking events, validates state transitions, persists the full audit trail, and exposes a projection for quick reads. Built as a portfolio project to showcase clean architecture, observability, testability, and hands-on DevOps.
+Order Tracking Service is a **Spring Boot 3** backend that accepts batches of tracking updates over HTTP, publishes one Kafka record per event keyed by `orderId`, and consumes those records to apply domain transition rules, append accepted events to an audit history, and update a read-oriented projection. Kafka separates request acceptance from downstream persistence; the ordering guarantee is per order within its Kafka partition, not global.
+
+### Current limitations
+
+- Producer idempotence, acknowledgements, and retries reduce duplicate publication risk, but the service does **not** provide end-to-end exactly-once processing. There is no durable event identity or database-level deduplication yet.
+- Redelivery can therefore re-attempt database work after a partial failure, and there is no dedicated safe replay/backfill path yet.
+- The repository documents local startup with Kafka and Postgres, but the complete clean-checkout path still needs explicit verification from a fresh clone.
+- Actuator and Prometheus endpoints exist, but there is no published performance baseline, SLO, consumer-lag dashboard, or operational runbook.
 
 ---
 
@@ -9,28 +16,28 @@ A production-style **Spring Boot 3** and Kafka service that ingests order-tracki
 - **REST API** to submit tracking events at `/order/tracking` (accepts **JSON** and **XML**).
 - **Kafka-backed ingestion pipeline**:
   - API requests are **partitioned into individual events**.
-  - Each event is published to a **private Kafka topic**.
-  - A dedicated consumer persists events and updates projections.
+  - Each event is published to a **private Kafka topic** using `orderId` as the Kafka key.
+  - A dedicated consumer validates domain transitions, persists accepted events, and updates projections.
 - **State machine** with auditable transitions:
   - `PICKED_UP_AT_WAREHOUSE` → initial
   - `OUT_FOR_DELIVERY`
   - `DELIVERY_ISSUE`
   - `DELIVERED` → final
-- **Append-only audit log** for all events per order, plus a **read-optimized projection** (e.g., `orders`).
-- **Validation** of illegal or out-of-order transitions.
+- **Append-only audit log** for accepted events per order, plus a **read-optimized projection** (e.g., `orders`).
+- **Validation** of required input fields and illegal state transitions at their respective processing boundaries.
 - **OpenAPI / Swagger UI** for interactive docs.
-- **Observability**: Spring Boot Actuator (health, metrics) and Prometheus scrape endpoint.
-- **Solid tests** with JUnit 5, REST Assured, Testcontainers.
-- **Docker-ready**: Postgres, Kafka, Adminer via Docker Compose, runnable locally with Make targets.
+- **Observability endpoints**: Spring Boot Actuator (health, metrics) and Prometheus scrape endpoint.
+- **Tests** with JUnit 5, REST Assured, Testcontainers.
+- **Docker-based local dependencies**: Postgres, Kafka, Adminer via Docker Compose, runnable locally with Make targets.
 
 ---
 
 ## 🧩 Architecture
 
-The service follows a **clean / hexagonal** style, now extended with **event-driven ingestion**:
+The service follows a **clean / hexagonal** style, extended with **event-driven ingestion**:
 
 - **Domain**: order event model and business rules for state transitions.
-- **Application**: use cases to apply and validate events, and produce the read projection.
+- **Application**: use cases to publish, apply and validate events, and produce the read projection.
 - **Adapters**:
   - Inbound: HTTP controller, Kafka consumer.
   - Outbound: Kafka producer, persistence adapters (JPA/Hibernate).
@@ -48,10 +55,10 @@ flowchart LR
   DB --> ReadAPI[Read Projection API]
 ```
 
-This design allows:
+This design provides:
 - Simple, immutable, and serializable event ingestion.
-- Horizontal scaling of producers and consumers.
-- Decoupled ingestion vs. persistence (resilient to DB or consumer slowdowns).
+- Independent producer/consumer scaling across Kafka partitions while events for one order remain ordered within their partition.
+- Separation between request acceptance and persistence duration; consumer lag can still accumulate when downstream processing or the database is slow.
 
 ---
 
@@ -92,7 +99,7 @@ make run-pg     # runs the Spring Boot app with Postgres profile
 > **Without Make:**
 > ```bash
 > docker compose -f deploy/docker-compose.yml up -d
-> mvn spring-boot:run -Dspring-boot.run.profiles=pg
+> mvn spring-boot:run -Dspring-boot.run.profiles=local-pg
 > ```
 
 ---
@@ -115,7 +122,7 @@ mvn -q clean verify
 ### Endpoint
 `POST /order/tracking`
 
-Sends one or more events. The service validates transitions and returns, for each event, whether it was accepted and sent to Kafka.
+Sends one or more events. The service validates required input before publication and returns, for each event, whether it was accepted and sent to Kafka. Domain state transitions are validated when the consumer applies the event.
 
 #### JSON example
 
@@ -174,7 +181,7 @@ Sends one or more events. The service validates transitions and returns, for eac
 ## Infrastructure (AWS Preproduction)
 
 This project includes a Terraform setup to deploy a **preproduction environment** on AWS.  
-The goal is to have a production-like stack running in ECS, backed by MSK (Kafka) and RDS (Postgres), with CI/CD through GitHub Actions.
+The topology runs the application in ECS, backed by MSK (Kafka) and RDS (Postgres), with CI/CD through GitHub Actions.
 
 ⚠️ Note: this is **not a real production setup**.  
 For simplicity and cost reasons, some concessions are in place:
@@ -186,28 +193,16 @@ See the dedicated [infra/README.md](infra/README.md) for full details on bootstr
 
 ---
 
-## 🗺️ Roadmap / Ideas
+## Known gaps / next work
 
-- **Scalability**: multiple Kafka consumers (parallelism, partition-based).
-- **API Gateway + policies**: rate limits, auth offloading.
-- **Security foundations**: JWT/OAuth2, input fuzzing.
-- **Observability**: Grafana dashboards for Kafka + DB.
-- **Architecture (CQRS)**: split commands vs. queries.
-- **Cache**: Redis for read-side caching.
-- **Load testing**: JMeter or Gatling.
-- **ML enrichment**: delivery delay prediction.
-- **Tracing**: OpenTelemetry spans per Kafka event.
-- **Idempotency**: deduplication on event ingestion.
-- **Kubernetes**: Helm chart for demo deployment.
+- **Durable event identity and database-level deduplication** — redelivery after a partial failure can currently re-attempt the same business effect.
+- **Retry, redelivery, rejection, and replay integration scenarios** — producer retry settings do not prove end-to-end recovery behavior, and there is no dedicated replay path yet.
+- **Clean-checkout verification** — validate the documented Kafka/Postgres startup path and persisted result from a fresh clone before treating the quick start as fully reproduced.
+- **Reproducible performance baseline** — measure the current system before making throughput or scaling claims or changing architecture for performance reasons.
+- **Small operational dashboard and runbook** — turn the existing Actuator/Prometheus signals into concrete consumer-lag, processing, and database checks with clearly scoped thresholds.
 
 ---
 
 ## 📄 License
 
 Released under the **MIT License**. See `LICENSE` for details.
-
----
-
-## 🙌 Credits
-
-Made with ❤️ as a personal portfolio project to demonstrate practical, production-minded engineering.
