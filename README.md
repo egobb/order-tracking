@@ -1,6 +1,6 @@
-# Order Tracking Service
+# Order Tracking
 
-Order Tracking Service is a **Spring Boot 3** backend that accepts batches of tracking updates over HTTP, publishes one Kafka record per event keyed by `orderId`, and consumes those records to apply domain transition rules, append accepted events to an audit history, and update a read-oriented projection. Kafka separates request acceptance from downstream persistence; the ordering guarantee is per order within its Kafka partition, not global.
+Order Tracking is a **Spring Boot 3** backend that accepts batches of tracking updates over HTTP, publishes one Kafka record per event keyed by `orderId`, and consumes those records to apply domain transition rules, append accepted events to an audit history, and update a read-oriented projection. Kafka separates request acceptance from downstream persistence; the ordering guarantee is per order within its Kafka partition, not global.
 
 ### Current limitations
 
@@ -8,6 +8,12 @@ Order Tracking Service is a **Spring Boot 3** backend that accepts batches of tr
 - Redelivery can therefore re-attempt database work after a partial failure, and there is no dedicated safe replay/backfill path yet.
 - The repository documents local startup with Kafka and Postgres, but the complete clean-checkout path still needs explicit verification from a fresh clone.
 - Actuator and Prometheus endpoints exist, but there is no published performance baseline, SLO, consumer-lag dashboard, or operational runbook.
+
+## Project links
+
+- [Portfolio case study](https://enriquegoberna.com/projects/order-tracking/)
+- [Scaling Order Tracking with Kafka, Domain Events, and Auto-Ingestion](https://enriquegoberna.com/posts/scaling-order-tracking-with-kafka-domain-events-and-auto-ingestion/)
+- [Engineering portfolio](https://enriquegoberna.com/)
 
 ---
 
